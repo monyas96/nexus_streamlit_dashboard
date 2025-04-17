@@ -1,9 +1,14 @@
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
+from pathlib import Path
 
 # === Set Page Config ===
 st.set_page_config(page_title="Topic 4.3: Capital Markets", layout="wide")
+
+# === Resolve base directory and path to data ===
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_PATH = BASE_DIR / "data" / "iso3_country_reference.csv"
 
 # === Section Title & Overview ===
 with st.container():
@@ -15,7 +20,7 @@ with st.container():
     """)
 
 # === Load Reference Data ===
-ref = pd.read_csv("/Users/moneerayassien/Nexus/Nexus-1/Nexus/dashboard_streamlit/data/iso3_country_reference.csv").rename(columns={"Country or Area": "country_name"})
+ref = pd.read_csv(DATA_PATH).rename(columns={"Country or Area": "country_name"})
 
 # === Country Selection ===
 country_list = sorted(ref["country_name"].dropna().unique())

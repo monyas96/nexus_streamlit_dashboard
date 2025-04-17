@@ -14,12 +14,9 @@ with st.container():
     Effective public expenditure management ensures that resources are not wasted and are directed toward development priorities.
     """)
 
-# Set base path to current file’s directory
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).resolve().parent.parent  
+data_path = BASE_DIR / "data" / "iso3_country_reference.csv"
 
-# Then you can define subpaths like:
-DATA_DIR = BASE_DIR / "data"
-data_path = DATA_DIR / "iso3_country_reference.csv"
 ref = pd.read_csv(data_path).rename(columns={"Country or Area": "country_name"})
 
 # === Country Selection ===

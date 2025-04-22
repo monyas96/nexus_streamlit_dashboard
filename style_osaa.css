@@ -1,0 +1,76 @@
+/* === GLOBAL FONT + BASE === */
+html, body, [class*="css"] {
+    font-family: "Segoe UI", sans-serif !important;
+    color: #072D92; /* Dark Blue */
+}
+
+/* === SIDEBAR STYLING === */
+section[data-testid="stSidebar"] {
+    background-color: #F1F1F1;
+    border-right: 2px solid #F58220; /* OSAA Orange */
+    padding-top: 1rem;
+}
+
+section[data-testid="stSidebar"] .css-1d391kg, .css-1v0mbdj {
+    color: #072D92 !important; /* Sidebar text */
+    font-weight: 400;
+}
+
+section[data-testid="stSidebar"] .css-1d391kg:hover {
+    color: #EC2E07 !important; /* Red hover */
+}
+
+/* === MAIN HEADER === */
+h1, h2, h3 {
+    color: #072D92 !important; /* Dark Blue */
+    font-weight: 700;
+}
+
+/* === EXPANDERS (e.g., Pillars) === */
+div[role="button"][aria-expanded] {
+    background-color: #FDF4EC; /* Light Orange background */
+    border: 1px solid #F58220 !important; /* OSAA Orange */
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+div[role="button"][aria-expanded]:hover {
+    background-color: #F1C398 !important; /* Softer orange on hover */
+}
+
+/* === INFO BOX / ALERT BOXES === */
+.css-1v0mbdj {
+    background-color: #BEF7F7 !important; /* Light Green background for info */
+    border-left: 5px solid #072D92 !important; /* Info border in Dark Blue */
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+/* === LINK STYLING === */
+a {
+    color: #072D92 !important;
+    font-weight: 500;
+    text-decoration: none;
+}
+a:hover {
+    color: #EC2E07 !important;
+    text-decoration: underline;
+}
+
+/* === BUTTONS === */
+button[kind="primary"] {
+    background-color: #072D92 !important;
+    color: white !important;
+    border-radius: 6px !important;
+}
+button[kind="primary"]:hover {
+    background-color: #F58220 !important;
+}
+
+/* === EMBED FRAMES === */
+iframe {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(7, 45, 146, 0.2);
+}

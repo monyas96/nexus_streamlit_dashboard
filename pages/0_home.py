@@ -4,47 +4,70 @@ import streamlit as st
 # === Home Content ===
 
 st.title("Data-Driven Tool for Development Nexus Thinking")
-st.markdown("**MVP - Version 1.0**")
+st.markdown("**<span style='background-color:#F58220; color:white; padding:4px 8px; border-radius:6px;'>🚧 MVP - Version 1.0</span>**", unsafe_allow_html=True)
 st.warning("This version is for validation purposes only, and the data presented is under review to ensure accuracy and quality.")
-
 st.markdown("""
 This dashboard highlights the nexus approach to development, demonstrating the interplay between peace, sustainable financing, and strong institutions.
-
-- 🔍 **Data Insights**: Interactive visualization of trends  
-- 📊 **Analytics**: Breakdowns by themes and geographies  
-- 🌍 **Impact**: Connecting policy and real-world changes
 """)
-st.divider()
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown("🔍 **Data Insights**  \n*Interactive visualization of trends*")
+with col2:
+    st.markdown("📊 **Analytics**  \n*Breakdowns by themes and geographies*")
+with col3:
+    st.markdown("🌍 **Impact**  \n*Connecting policy and real-world changes*")
+
+st.divider() 
+
 
 # === Pillar Summaries ===
-st.header("🔎 Explore the Four Pillars")
+# === Pillar Section ===
+st.header("🔍 Explore the Four Pillars")
+st.caption("Each pillar represents a layer of the development–financing–institution nexus.")
 
-with st.expander("📌 Pillar 1: Durable Peace Requires Sustainable Development"):
-    st.markdown("""
-    Lasting peace cannot exist without a foundation of sustainable development.  
-    This pillar focuses on how economic growth, climate adaptation, resilience, and social equity  
-    collectively contribute to stable and peaceful societies.
-    """)
-    st.info("🚧 Coming Soon")
+# Pillar data
+pillar_titles = [
+    "Pillar 1: Durable Peace Requires Sustainable Development",
+    "Pillar 2: Sustainable Development Requires Sustainable Financing",
+    "Pillar 3: Sustainable Financing Requires Control Over Economic and Financial Flows",
+    "Pillar 4: Control Over Economic and Financial Flows Requires Strong Institutions",
+]
+pillar_icons = ["🕊️", "💰", "🌐", "🏛️"]
+pillar_status = ["coming_soon", "active", "coming_soon", "coming_soon"]
 
-with st.expander("📌 Pillar 2: Sustainable Development Requires Sustainable Financing"):
-    st.markdown("""
-    Sustainable development needs financing that is substantial, enduring, and resilient.  
-    This pillar examines how countries secure nationally owned, long-term financing aligned with local priorities.
-    """)
-    if st.button("👉 Explore Pillar 2"):
-        st.switch_page("pages/ 1_pillar_2.py")
+# Layout: 4 equal columns
+cols = st.columns(4)
 
-with st.expander("📌 Pillar 3: Sustainable Financing Requires Control Over Economic and Financial Flows"):
-    st.markdown("""
-    Achieving sustainable financing requires African states to have sovereignty over their economic and financial resources.  
-    This pillar highlights the ability to manage and direct flows effectively toward national development goals.
-    """)
-    st.info("🚧 Coming Soon")
+for i, col in enumerate(cols):
+    with col:
+        st.markdown(f"""
+        <div style='text-align:center; padding: 0.5rem;'>
+            <div style="font-size: 36px;">{pillar_icons[i]}</div>
+            <div style="font-weight: 600; font-size: 16px; color: #072D92; line-height: 1.4;">
+                {pillar_titles[i]}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-with st.expander("📌 Pillar 4: Control Over Economic and Financial Flows Requires Strong Institutions"):
-    st.markdown("""
-    Managing economic and financial flows depends on strong, effective, and transparent institutions.  
-    This pillar focuses on the country systems and capacities needed to regulate, implement, and ensure accountability.
-    """)
-    st.info("🚧 Coming Soon")
+        # Button logic
+        if pillar_status[i] == "active":
+            st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+            if st.button("👉 Explore", key=f"explore_btn_{i}"):
+                st.switch_page("pages/ 1_pillar_2.py")
+            st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div style='text-align: center; margin-top: 0.5rem;'>
+                <button disabled style="
+                    background-color: #FDF4EC; 
+                    color: #F58220; 
+                    border: 1px solid #F58220; 
+                    border-radius: 6px; 
+                    padding: 0.4rem 1rem;
+                    font-weight: 600;
+                    cursor: not-allowed;">
+                    🚧 Coming Soon
+                </button>
+            </div>
+            """, unsafe_allow_html=True)

@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+
 st.set_page_config(
     page_title="Nexus Dashboard",
     layout="wide",
@@ -7,7 +8,8 @@ st.set_page_config(
 )
 import os
 from pathlib import Path
-
+with open("style_osaa.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 # === Top Logo Row ===
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 LOGO_PATH_OSAA = os.path.join(APP_DIR, "logos", "OSAA identifier color.png")

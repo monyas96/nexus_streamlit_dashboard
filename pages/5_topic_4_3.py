@@ -2,31 +2,31 @@ import streamlit as st
 import pandas as pd
 import pydeck as pdk
 from pathlib import Path
+from utils import render_logo_header
 
-# === Set Page Config ===
-st.set_page_config(page_title="Topic 4.3: Capital Markets", layout="wide")
+render_logo_header()
+# === Top Bar ===
+col1, col2 = st.columns([0.8, 0.1])
+with col1:
+    st.title("📊 Topic 4.3: Capital Markets")
+with col2:
+    st.page_link("pages/0_home.py", label="🏠 Back to Home")
 
-# === Resolve base directory and path to data ===
+# === Intro ===
+st.markdown("""
+Capital markets are essential for mobilizing domestic financial resources and channeling savings into productive investments.  
+A well-developed capital market reduces reliance on foreign financing, supports sustainable economic growth, and strengthens financial stability.  
+**Effective management of capital markets ensures that resources are directed toward areas that maximize national development.**
+""")
+
+# === Country Selector & Map ===
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / "data" / "iso3_country_reference.csv"
-
-# === Section Title & Overview ===
-with st.container():
-    st.title("📊 Topic 4.3: Capital Markets")
-    st.markdown("""
-    Capital markets are essential for mobilizing domestic financial resources and channeling savings into productive investments.  
-    A well-developed capital market reduces reliance on foreign financing, supports sustainable economic growth, and strengthens financial stability.  
-    **Effective management of capital markets ensures that resources are directed toward areas that maximize national development.**
-    """)
-
-# === Load Reference Data ===
 ref = pd.read_csv(DATA_PATH).rename(columns={"Country or Area": "country_name"})
 
-# === Country Selection ===
 country_list = sorted(ref["country_name"].dropna().unique())
 selected_country = st.selectbox("🔎 Select a country to explore:", country_list)
 
-# === Map Layout ===
 st.markdown("### 🌍 Explore by Region")
 map_data = ref.copy()
 map_data["selected"] = map_data["country_name"] == selected_country
@@ -47,7 +47,7 @@ st.pydeck_chart(pdk.Deck(
     tooltip={"text": "{country_name}"}
 ))
 
-# === Indicator Tabs ===
+# === Main Tabs for Each Subtopic ===
 st.markdown("## 🧭 Indicator Insights")
 tab1, tab2, tab3 = st.tabs([
     "📈 4.3.1: Market Capitalization",
@@ -57,69 +57,81 @@ tab1, tab2, tab3 = st.tabs([
 
 # === Tab 1: Market Capitalization ===
 with tab1:
-    st.markdown("### 📈 4.3.1: Market Capitalization")
-    st.markdown("""
-This subtopic focuses on the size and activity of a country’s stock and bond markets, which reflect the ability of capital markets to raise funds for investment and development.
-
-#### Indicator 4.3.1.1: Stock Market Capitalization to GDP  
-**Definition:** Measures the total value of listed companies on the stock market as a percentage of GDP.  
-**Relevance:**  
-**Efficiency:** Indicates how well capital is being mobilized through the stock market relative to the economy’s size.  
-**Effectiveness:** Demonstrates whether stock market growth translates into increased investment in key sectors.
-    """)
-    st.info("📊 Graph Placeholder: Stock Market Capitalization to GDP")
-
-    st.markdown("""
-#### Indicator 4.3.1.2: Bond Market Development  
-**Definition:** Measures the volume of bonds issued and traded domestically.  
-**Relevance:**  
-**Efficiency:** Highlights the role of the bond market in efficiently raising long-term capital.  
-**Effectiveness:** Assesses whether the funds raised are being directed toward infrastructure, social services, and other national priorities.
-    """)
-    st.info("📊 Graph Placeholder: Bond Market Development")
+    with st.container():
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**Indicator: Stock Market Capitalization to GDP**")
+            st.image("logos/Market Capitalization of Listed Domestic Companies (Current $US.png", use_container_width=True)
+            with st.expander("Learn more about this indicator"):
+                d1, d2, d3 = st.tabs(["Definition", "Relevance", "Proxy Justification"])
+                with d1:
+                    st.write("Measures total value of listed companies as a % of GDP.")
+                with d2:
+                    st.write("Efficiency: Capital mobilization  \nEffectiveness: Links to sectoral investment")
+                with d3:
+                    st.write("No proxy needed. Source: World Bank.")
+        with col2:
+            st.markdown("**Indicator: Bond Market Development**")
+            st.image("logos/Portfoilo Investment Bonds (Current US$).png", use_container_width=True)
+            with st.expander("Learn more about this indicator"):
+                d1, d2, d3 = st.tabs(["Definition", "Relevance", "Proxy Justification"])
+                with d1:
+                    st.write("Measures volume of domestic bonds issued and traded.")
+                with d2:
+                    st.write("Efficiency: Capital raised  \nEffectiveness: Infrastructure & development finance")
+                with d3:
+                    st.write("Direct indicator.")
 
 # === Tab 2: Financial Intermediation ===
 with tab2:
-    st.markdown("### 🏦 4.3.2: Financial Intermediation")
-    st.markdown("""
-This subtopic focuses on the financial system’s ability to convert savings into productive investments and manage external reserves.
-
-#### Indicator 4.3.2.1: Adequacy of International Reserves  
-**Definition:** Measures the ratio of international reserves to short-term external debt.  
-**Relevance:**  
-**Efficiency:** Indicates how well reserves are managed to ensure financial stability.  
-**Effectiveness:** Ensures reserves are sufficient to protect the economy against external shocks.
-    """)
-    st.info("📊 Graph Placeholder: Adequacy of International Reserves")
-
-    st.markdown("""
-#### Indicator 4.3.2.2: Banking Sector Development Index  
-**Definition:** Measures the development and efficiency of the banking sector in terms of providing access to credit and mobilizing savings.  
-**Relevance:**  
-**Efficiency:** Reflects the ability of banks to allocate credit and manage deposits effectively.  
-**Effectiveness:** Highlights whether banking sector improvements lead to economic growth and financial inclusion.
-    """)
-    st.info("📊 Graph Placeholder: Banking Sector Development Index")
+    with st.container():
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**Indicator: Adequacy of International Reserves**")
+            st.image("logos/Adequacy of International Reserves.png", use_container_width=True)
+            with st.expander("Learn more about this indicator"):
+                d1, d2, d3 = st.tabs(["Definition", "Relevance", "Proxy Justification"])
+                with d1:
+                    st.write("Ratio of reserves to short-term external debt.")
+                with d2:
+                    st.write("Efficiency: Reserve sufficiency  \nEffectiveness: Shock protection")
+                with d3:
+                    st.write("Direct indicator. Source: IMF.")
+        with col2:
+            st.markdown("**Indicator: Banking Sector Development Index**")
+            st.image("logos/Banking Sector Development Index.png", use_container_width=True)
+            with st.expander("Learn more about this indicator"):
+                d1, d2, d3 = st.tabs(["Definition", "Relevance", "Proxy Justification"])
+                with d1:
+                    st.write("Captures depth, access, and efficiency of banking systems.")
+                with d2:
+                    st.write("Efficiency: Credit allocation  \nEffectiveness: Inclusive growth")
+                with d3:
+                    st.write("Proxy: IMF FAS / World Bank Findex")
 
 # === Tab 3: Institutional Investors ===
 with tab3:
-    st.markdown("### 💼 4.3.3: Investment from Institutional Investors")
-    st.markdown("""
-This subtopic focuses on the role of institutional investors, such as pension funds and sovereign wealth funds, in contributing to long-term domestic development.
-
-#### Indicator 4.3.3.1: Private Sector Credit to GDP  
-**Definition:** Measures the total credit extended to the private sector as a percentage of GDP.  
-**Relevance:**  
-**Efficiency:** Demonstrates the role of financial institutions in providing credit efficiently to private entities.  
-**Effectiveness:** Shows how credit expansion supports business growth and contributes to national development.
-    """)
-    st.info("📊 Graph Placeholder: Private Sector Credit to GDP")
-
-    st.markdown("""
-#### Indicator 4.3.3.2: Pension Funds and Sovereign Wealth Funds Investments  
-**Definition:** Measures the proportion of assets from these funds invested in domestic capital markets.  
-**Relevance:**  
-**Efficiency:** Tracks how well institutional investments are directed toward productive domestic sectors.  
-**Effectiveness:** Evaluates whether these investments contribute to sustainable and inclusive growth.
-    """)
-    st.info("📊 Graph Placeholder: Pension and SWF Investments")
+    with st.container():
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**Indicator: Private Sector Credit to GDP**")
+            
+            with st.expander("Learn more about this indicator"):
+                d1, d2, d3 = st.tabs(["Definition", "Relevance", "Proxy Justification"])
+                with d1:
+                    st.write("Measures credit provided to the private sector as % of GDP.")
+                with d2:
+                    st.write("Efficiency: Credit expansion  \nEffectiveness: Business growth")
+                with d3:
+                    st.write("World Bank direct indicator.")
+        with col2:
+            st.markdown("**Indicator: Pension & Sovereign Wealth Fund Investments**")
+            
+            with st.expander("Learn more about this indicator"):
+                d1, d2, d3 = st.tabs(["Definition", "Relevance", "Proxy Justification"])
+                with d1:
+                    st.write("Share of pension/SWF assets invested in national markets.")
+                with d2:
+                    st.write("Efficiency: Long-term allocation  \nEffectiveness: Domestic economic returns")
+                with d3:
+                    st.write("Proxies from national fund reports / SWFI database.")

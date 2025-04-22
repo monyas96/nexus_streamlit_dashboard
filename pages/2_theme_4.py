@@ -1,7 +1,11 @@
 import streamlit as st
+from utils import render_logo_header
 
-st.set_page_config(page_title="Theme 4: Domestic Resource Mobilization", layout="wide")
-
+render_logo_header()
+# Back to home (top-right)
+col1, col2 = st.columns([7, 1])
+with col2:
+    st.page_link("pages/0_home.py", label="🏠 Back to Home")
 # === Title ===
 st.title("📁 Theme 4: Domestic Resource Mobilization (DRM) – Institutions & Systems")
 

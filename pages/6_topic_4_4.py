@@ -2,34 +2,35 @@ import streamlit as st
 import pandas as pd
 import pydeck as pdk
 from pathlib import Path
+from utils import render_logo_header
 
-# === Set Page Config ===
-st.set_page_config(page_title="Topic 4.4: Illicit Financial Flows", layout="wide")
-
-# === Resolve base directory and path to data ===
+render_logo_header()
+# === Paths ===
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / "data" / "iso3_country_reference.csv"
 
-# === Section Title & Overview ===
-with st.container():
+# === Top Bar ===
+col1, col2 = st.columns([0.8, 0.1])
+with col1:
     st.title("💸 Topic 4.4: Illicit Financial Flows (IFFs)")
-    st.markdown("""
-    Illicit financial flows (IFFs) are a critical challenge for domestic resource mobilization as they represent a significant loss of financial resources that could otherwise be used for development.  
-    IFFs include practices like trade mispricing, tax evasion, corruption, and criminal activities. Addressing IFFs is essential to ensure that financial resources remain within the country and are directed toward development priorities.
-    """)
+with col2:
+    st.page_link("pages/0_home.py", label="🏠 Back to Home", use_container_width=True)
 
-# === Load Reference Data ===
+# === Overview ===
+st.markdown("""
+Illicit financial flows (IFFs) represent a significant loss of resources that could fund development.  
+They include trade mispricing, tax evasion, corruption, and illegal activity. Tackling IFFs strengthens domestic resource mobilization.
+""")
+
+# === Country Selector ===
 ref = pd.read_csv(DATA_PATH).rename(columns={"Country or Area": "country_name"})
-
-# === Country Selection ===
 country_list = sorted(ref["country_name"].dropna().unique())
 selected_country = st.selectbox("🔎 Select a country to explore:", country_list)
 
-# === Map Layout ===
+# === Regional Map ===
 st.markdown("### 🌍 Explore by Region")
 map_data = ref.copy()
 map_data["selected"] = map_data["country_name"] == selected_country
-
 st.pydeck_chart(pdk.Deck(
     map_style="mapbox://styles/mapbox/light-v10",
     initial_view_state=pdk.ViewState(latitude=0, longitude=20, zoom=2),
@@ -47,7 +48,7 @@ st.pydeck_chart(pdk.Deck(
 ))
 
 # === Indicator Tabs ===
-st.markdown("## 🧭 Indicator Insights")
+st.subheader("🧭 Indicator Insights")
 tab1, tab2, tab3 = st.tabs([
     "📉 4.4.1: Magnitude of Illicit Financial Flows",
     "🔍 4.4.2: Types of IFFs",
@@ -56,96 +57,76 @@ tab1, tab2, tab3 = st.tabs([
 
 # === Tab 1: Magnitude of IFFs ===
 with tab1:
-    st.markdown("### 📉 4.4.1: Magnitude of Illicit Financial Flows")
-    st.markdown("""
-#### Indicator 4.4.1.1: IFFs as a Percentage of GDP  
-_(Proxied by Global Financial Integrity: Estimated Value of Illicit Financial Flows as a Proportion of GDP)_
+    with st.container():
+        st.markdown("### 📉 Indicator 4.4.1.1: IFFs as % of GDP")
+        st.caption("Proxied by Global Financial Integrity")
+        st.info("📊 Graph Placeholder: IFFs as a % of GDP")
+        with st.expander("🔍 Learn more"):
+            st.markdown("""
+**Definition:** Estimated value of IFFs relative to GDP, showing macro-level impact.  
+**Proxy:** Based on GFI trade gap & capital flight data.
+            """)
 
-**Definition:**  
-This indicator measures the estimated value of illicit financial flows as a share of a country’s Gross Domestic Product (GDP), reflecting the extent to which illicit capital flight affects economic stability.
-
-**Proxy Justification:**  
-Data from **Global Financial Integrity (GFI)** estimates IFFs as a percentage of GDP based on trade discrepancies, unrecorded capital movements, and other financial anomalies.
-    """)
-    st.info("📊 Graph Placeholder: IFFs as a Percentage of GDP")
-
-    st.markdown("""
-#### Indicator 4.4.1.2: Annual IFF Volume  
-_(Proxied by Global Financial Integrity: Total Volume of Illicit Financial Flows Annually)_
-
-**Definition:**  
-This indicator quantifies the total estimated volume of illicit financial flows in absolute terms (e.g., USD billions per year), providing insight into the scale of illegal capital movement.
-
-**Proxy Justification:**  
-**Global Financial Integrity (GFI)** provides annual estimates of illicit flows based on anomalies in trade data, cross-border capital flight, and financial misreporting.
-    """)
-    st.info("📊 Graph Placeholder: Annual IFF Volume")
+    with st.container():
+        st.markdown("### 💵 Indicator 4.4.1.2: Annual IFF Volume")
+        st.caption("Proxied by Global Financial Integrity")
+        st.info("📊 Graph Placeholder: Total IFF Volume")
+        with st.expander("🔍 Learn more"):
+            st.markdown("""
+**Definition:** Total illicit outflows per year (USD).  
+**Proxy:** GFI estimate of unrecorded transfers, trade mismatches.
+            """)
 
 # === Tab 2: Types of IFFs ===
 with tab2:
-    st.markdown("### 🔍 4.4.2: Types of Illicit Financial Flows")
+    with st.container():
+        st.markdown("### 🔍 Indicator 4.4.2.1: Trade Mispricing")
+        st.caption("Proxied by GFI Trade Gap Data")
+        st.info("📊 Graph Placeholder: Trade Mispricing")
+        with st.expander("🔍 Learn more"):
+            st.markdown("""
+**Definition:** Manipulating trade values to illegally shift capital.  
+**Proxy:** GFI's bilateral trade mismatch analysis.
+            """)
 
-    st.markdown("""
-#### Indicator 4.4.2.1: Trade Mispricing  
-_(Proxied by Global Financial Integrity: Trade Value Gaps in International Trade Data)_
+    with st.container():
+        st.markdown("### 🧾 Indicator 4.4.2.2: Tax Evasion")
+        st.caption("Proxied by IMF Tax Registration Data")
+        st.info("📊 Graph Placeholder: Tax Evasion Trends")
+        with st.expander("🔍 Learn more"):
+            st.markdown("""
+**Definition:** Illegally avoiding taxes via underreporting or offshore hiding.  
+**Proxy:** Share of taxpayers vs. population (IMF compliance benchmark).
+            """)
 
-**Definition:**  
-Trade mispricing occurs when importers or exporters deliberately misstate the price, quantity, or quality of goods and services to shift capital across borders illegally.
-
-**Proxy Justification:**  
-The trade value gap estimates from Global Financial Integrity provide an approximate measure of trade mispricing by analyzing mismatches in reported trade data.
-    """)
-    st.info("📊 Graph Placeholder: Trade Mispricing")
-
-    st.markdown("""
-#### Indicator 4.4.2.2: Tax Evasion  
-_(Proxied by IMF: Taxpayer Registration Data)_
-
-**Definition:**  
-Refers to illegal practices to avoid paying taxes, including underreporting income, inflating deductions, and hiding money in offshore accounts.
-
-**Proxy Justification:**  
-IMF’s taxpayer registration indicators, such as the percentage of registered taxpayers relative to the labor force, provide insight into tax compliance trends.
-    """)
-    st.info("📊 Graph Placeholder: Tax Evasion")
-
-    st.markdown("""
-#### Indicator 4.4.2.3: Criminal Activities  
-_(Proxied by UNODC: Criminal Activity Data)_
-
-**Definition:**  
-This indicator tracks illicit financial flows generated from organized crime, drug trafficking, human trafficking, and other illegal activities.
-
-**Proxy Justification:**  
-The UNODC dataset provides estimates of financial flows associated with criminal activities, offering insights into the illicit scale of IFFs from organized crime.
-    """)
-    st.info("📊 Graph Placeholder: Criminal Activities")
+    with st.container():
+        st.markdown("### 🕵️ Indicator 4.4.2.3: Criminal Activities")
+        st.caption("Proxied by UNODC Crime Flow Data")
+        st.info("📊 Graph Placeholder: Crime-Linked IFFs")
+        with st.expander("🔍 Learn more"):
+            st.markdown("""
+**Definition:** IFFs generated from organized crime, trafficking, and corruption.  
+**Proxy:** UNODC estimates on proceeds from criminal activity.
+            """)
 
 # === Tab 3: Detection and Enforcement ===
 with tab3:
-    st.markdown("### 🛡️ 4.4.3: Detection and Enforcement")
+    with st.container():
+        st.markdown("### 🛡️ Indicator 4.4.3.1: Anti-IFF Enforcement Effectiveness")
+        st.caption("Proxied by WJP & CPIA Ratings")
+        st.info("📊 Graph Placeholder: Enforcement Metrics")
+        with st.expander("🔍 Learn more"):
+            st.markdown("""
+**Definition:** Number of successful investigations and prosecutions.  
+**Proxy:** Governance & transparency scores from WJP and CPIA.
+            """)
 
-    st.markdown("""
-#### Indicator 4.4.3.1: Effectiveness of Anti-IFF Measures  
-_(Proxied by World Justice Project & CPIA Transparency Ratings)_
-
-**Definition:**  
-This indicator measures the number of successful prosecutions and enforcement actions taken against IFF-related offenses.
-
-**Proxy Justification:**  
-The World Justice Project’s Rule of Law Index and CPIA transparency ratings provide a broad measure of governance quality and enforcement strength.
-    """)
-    st.info("📊 Graph Placeholder: Anti-IFF Measures")
-
-    st.markdown("""
-#### Indicator 4.4.3.2: Corruption and Bribery  
-_(Proxied by WJP Rule of Law Index & WB Governance Indicators)_
-
-**Definition:**  
-This indicator measures the extent of corruption and bribery in both public and private sectors, where illicit payments distort economic and governance structures.
-
-**Proxy Justification:**  
-The World Justice Project (WJP) Rule of Law Index and World Bank Governance Indicators provide relevant metrics, including the "Control of Corruption" score and public perceptions of bribery prevalence.
-    """)
-    st.info("📊 Graph Placeholder: Corruption and Bribery")
-
+    with st.container():
+        st.markdown("### ⚖️ Indicator 4.4.3.2: Corruption & Bribery")
+        st.caption("Proxied by WJP & World Bank Governance Indicators")
+        st.info("📊 Graph Placeholder: Corruption Index")
+        with st.expander("🔍 Learn more"):
+            st.markdown("""
+**Definition:** Perceptions and incidents of corruption in public/private sectors.  
+**Proxy:** Control of Corruption index, WJP bribery prevalence score.
+            """)

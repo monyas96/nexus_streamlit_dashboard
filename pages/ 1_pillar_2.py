@@ -1,8 +1,11 @@
 import streamlit as st
+from utils import render_logo_header
 
-# === Set Page Config ===
-st.set_page_config(page_title="Pillar 2: Sustainable Finance", layout="wide")
-
+render_logo_header()
+# Back to home (top-right)
+col1, col2 = st.columns([7, 1])
+with col2:
+    st.page_link("pages/0_home.py", label="🏠 Back to Home")
 # === Top-Level Framing ===
 st.title("📌 Pillar 2: Sustainable Development Requires Sustainable Finance")
 st.markdown("""

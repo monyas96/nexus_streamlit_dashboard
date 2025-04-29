@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import pandas as pd
 
 st.set_page_config(
     page_title="Nexus Dashboard",
@@ -26,6 +27,7 @@ pages = [
     st.Page("pages/4_topic_4_2.py", title="Topic 4.2: Budget and Tax Revenues", icon="🧾"),
     st.Page("pages/5_topic_4_3.py", title="Topic 4.3: Capital Markets", icon="📈"),
     st.Page("pages/6_topic_4_4.py", title="Topic 4.4: Illicit Financial Flows", icon="🚫"),
+    st.Page("pages/99_indicator_explorer.py", title="Indicator Explorer", icon="🧪")
 ]
 # Run selected page
 selection = st.navigation(pages)
@@ -56,3 +58,4 @@ with st.sidebar.expander("🧠 Explore the Mind Map"):
         """,
         height=500,
     )
+

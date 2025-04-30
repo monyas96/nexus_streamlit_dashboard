@@ -160,22 +160,13 @@ Background: #FDF4EC (Light Orange)
 
 Highlight: #EC2E07 (Red)
 
-🤝 Contributing
-Contributions are welcome! Please:
+Contributing
+Contributions are welcome! Feel free to open issues or submit pull requests with improvements.
 
-Fork the repository
-
-Create a new branch: git checkout -b feature/my-feature
-
-Commit your changes: git commit -m 'Add feature'
-
-Push to the branch: git push origin feature/my-feature
-
-Open a Pull Request
-
-📜 License
-This project is licensed under the MIT License – see LICENSE for details.
+📄 License
+MIT © Moneera Yassien
+UN Office of the Special Adviser on Africa
 
 📬 Contact
-For questions or contributions, feel free to reach out via GitHub or email: your.email@example.com.
+For questions or contributions, feel free to reach out via GitHub 
 

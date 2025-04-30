@@ -1,0 +1,92 @@
+,,Ideal,,,,,,,,,,,,,,
+page,column,row,Page,Tab,#,Proxy Inidctor Indicator,Viz goal ( one sentence: what are we looking at),Graph type,X axis ecoding,Y axis ecoding,Color encoding ,Facet,Calculation ,Summary stat,,
+,,,3,1,1,4.1.1.1 Aggregate expenditure outturn,Percentage of what the government intended to spend in a year vs what it actually spent. ,Stacked bar graph for each covering each year's progress. ,Year,Percentage,"Red - Intended expenditure
+Green- actual expenditure",Map of Africa with option to hover/select on each country.,,,pivot wide ,select
+,,,3,2,1,4.1.1.2 Expenditure composition outturn,Percentage of funds allocated to each sector/program in the economy vs. percentage actually spent in that sector/program.,Stacked bar graph for each covering each year's progress. ,Year,Percentage,"Red - Intended expenditure
+Green- actual expenditure",Map of Africa with option to hover/select on each country.,,,long,filter
+,,,4,1,1,4.2.1.1 Tax Revenue as Percentage of GDP,Total tax collected (direct & indirect) as a percentage of the government's income (GDP).,Stacked bar graph for each covering each year's progress. ,Year,Percentage,"Red - Intended expenditure
+Green- actual expenditure",Map of Africa with option to hover/select on each country.,,,,
+,,,4,2,1,4.2.1.2 .a Domestic revenue from large taxpayers,Track trends in domestic revenue from large taxpayers.,Line chart with one line per country,Year,Revenue from large taxpayers (absolute values or as % of total tax revenue),Color encoding for each country,Line graphs for each African country color-coded with legend.,,,,
+,,,4,2,1,"
+4.2.1.2.b Number of Taxpayers (Number of corporate income taxpayers, Number of VAT taxpayers, Number of personal income taxpayers, Number of wage/salary taxpayers (employers), Number of wage/salary taxpayers (employees), Number of trust taxpayers)","Show the composition of the taxpayer base across types, by country.",bar chart showing taxpayer types per country.,Country,Number of registered taxpayers,Each category has a different color -specified in the legend,"Show total number of taxpayers for selected country and year
+Show breakdown by taxpayer type",,,,
+,,,4,2,2,4.2.2.1 Tax effort (ratio) [tax_eff] ,Show changes in tax effort ratio over time per country.,Line chart,Year,Tax Effort Ratio (decimal values),Color encoding for each country,"Country (multi-select dropdown)
+Year range (slider or predefined intervals: last 10/20 years)
+Optionally show actual tax revenue and estimated potential (if available) 
+2) Country-wise heat map of the African region. ",,,,
+,,,4,2,2,"4.2.2.2a Tax buoyancy [by_tax]
+",Tax Buoyancy measures how sensitively tax revenues respond to changes in GDP., Time-series line chart showing tax buoyancy coefficient over time,Year,Buoyancy coefficient,Color encoding for each country,"Country (multi-select)
+Year range (slider)
+Tooltip Content:
+Year
+Buoyancy coefficient value",,,,
+,,,4,2,2,4.2.2.2b Tax Capacity & Gap,Tax Gap quantifies the difference between actual tax collections and the estimated revenue potential under existing laws. ,Country-wise heat map of Africa showing estimated tax gap (% of GDP),,,,,,,,
+,,,5,1,1,4.3.1.1 Market capitalization in USD as percentage of GDP (Calculated indicator),Market Capitalization as a Percentage of GDP reflects the depth and maturity of domestic equity markets. ,Time-Series Line Chart,Year,Percentage,Color encoding for each country,"Country (multi-select)
+Year range (slider)
+Year",,,,
+,,,5,1,1,"4.3.1.2. Portfolio investment, bonds (PPG + PNG) (NFL, current US$)",Portfolio Investment in Bonds captures the volume of debt securities (public and private) held by foreign investors.,Time-Series Line Chart,Year,Percentage,,Map of Africa with option to hover/select on each country.,,,,
+,,,5,1,1,"4.3.1.3 The ratio of (BoP, current US$) to External Debt Stocks, Short-Term (DOD, Current US$))",The Ratio of Balance of Payments (BoP) to Short-Term External Debt reflects a country's capacity to meet immediate external obligations through its international transactions. ,Stacked bar graph for each covering each year's progress. ,Year,Percentage,"Red - BoP 
+Green- Debt","Country (multi-select)
+Year range (slider)",,,,
+,,,5,2,1,4.3.2.1 Banking Sector Development Index (Calculated see methodology) ,"The Banking Sector Development Index synthesizes multiple variables (e.g., access, depth, efficiency, and stability) to provide a holistic picture of banking system performance",Bar chart showing index for each country,Country,Index,,,,,,
+,,,5,2,1,4.3.2.2 Private Sector Credit to GDP,Measures the extent to which banks and financial institutions provide lending to non-public borrowers. ,Stacked bar chart showing the ratio of private sector lending to GDP,Country,Index,"Red - private sector lending
+Green- GDP","Country (multi-select)
+Year range (slider)",,,,
+,,,5,3,1,4.3.3.1 Pension Funds and Sovereign Wealth Funds Investment. ,Proxies to assess domestic institutional investor activity.,Bar chart of pension funds vs wealth funds investment,Country,Index,"Red - pension funds investment
+Green- Wealth funds investment","Country (multi-select)
+Year range (slider)",,,,
+,,,6,1,1,4.4.1.1. IFFs as Percentage of GDP (Sum the values from topic 4.4.2 and calculate % to GDP),IFFs as a Percentage of GDP offer a standardized way to gauge the scale of financial leakage relative to economic output.,Stacked bar chart showing IFFs over the country's income (GDP).,Country,Index,"Red - IFFs
+Green- GDP","Country (multi-select)
+Year range (slider)",,,,
+,,,6,1,1,4.4.1.2 Annual IFF Volume (Sum the values from topic 4.4.2/ Text data),Annual Illicit Financial Flow Volume estimates the total value of illicit outflows over a year.,Bar chart,Year,Annual IFF volume,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,2,2,4.4.2.1 Trade Mispricing: Volume and value of trade mispricing activities detected.,"deliberately misrepresenting the value, quantity, or type of goods or services in international trade transactions",Stacked bar chart showing the value of total trade vs the cost incurred. ,Year,Value,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,2,2,4.4.2.2.a Registration of personal income ,Assesses the breadth of the taxpayer base,Time-series Line chart showing the number of active employees (income earners),Year,Percentage,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,2,2,4.4.2.2.b. Active taxpayers on PIT register as percentage of Labor Force,Number of effective inclusion of working individuals.,Stacked bar chart showing the number of active taxpayers over the number of active income earners,Year/Country,Value,"Red - Active taxpayers
+Green- Active income earners","Country (multi-select)
+Year range (slider)",,,,
+,,,6,2,2,4.4.2.2.c Active taxpayers on PIT register as percentage of population.,Shows active tax payers as a percentage of the entire population,Line chart showing the percentage of active taxpayers,Year/Country,Percentage,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,2,2,"4.4.2.2.d. Percentage inactive taxpayers on registers : On PIT register, On CIT register , On VAT register, On PAYE register, On Excise register ",Shows  inefficiencies in compliance or enforcement.,Line chart,Year/Country,Percentage,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,1,"4.4.2.3. Criminal Activities
+Number of reported total drug seixures times drug price per year",Measures the scope of drug seizures and reflects the effectiveness of law enforcement agencies in countering illicit drug flows. ,Bar chart,Year,Value of reported drug seizures,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,3,4.4.2.4.a Corruption and Bribery calculate (1 a.Normalize WB Controle of Corruption idciator (0-1) Scores b.Assign a weight to each country based on its normalized Governance score. c. Sum all the weights to get the total weight d. Calculate Each Country's Share (country weight/total weight * 148) ,Measures the hindering effective governance and economic growth. ,Line chart,Year,Percentage,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,4,4.4.2.4.b.Proxy the prevlence of corrpution and bribery using Absence of Corruption  indicator from the WJP Rule of Law index https://worldjusticeproject.org/rule-of-law-index/ ,Measures the hindering effective governance and economic growth. ,Line chart,Year,Percentage,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,5,4.4.3.1 Efficacy of Anti-IFF Measures (Proxied by enablers  framework suggest by the Coherent policies for ombatting Illicit Financial Flows) ,Measures to combat illicit financial flows  depends on the effectiveness of a country’s regulatory and enforcement frameworks. ,Stacked bar chart (Number of IFF cases filed over the number of presecuted),Year,Number,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,6,4.4.3.1a Regulation of Financial market,"This indicator  ensures market stability, investor confidence, and the prevention of illicit financial activities",Line chart,Year,percentage of financial reguation,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,7,4.4.3.1b. Rule of Law (Factor 6: Regulatory Enforcement),Regulatory enforcement plays a central role in ensuring that laws are applied fairly and consistently.,Bar chart,Year,Degree of regulatory enforcement,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,8,4.4.3.1c.Rule of Law & Justice (score and rank),"The rule of law is foundational for ensuring accountability, transparency, and fair access to justice, all of which are vital for economic governance.",Bar chart,Country,Rule of Law & Justice Index,,Year range (slider),,,,
+,,,6,3,9,"4.4.3.1d. Reduce corruption (CPIA transparency, accountability, and corruption in the public sector rating (1=low to 6=high))",The CPIA rating for transparency and accountability in the public sector reflects the extent to which governments are committed to reducing corruption. ,Bar chart,Country,CIPA Corruption Index,,Year range (slider),,,,
+,,,6,3,10,4.4.3.1e. Sound institutions  (CPIA quality of public administration rating (1=low to 6=high)),Sound institutions are critical to ensuring efficient and accountable governance.,Bar chart,Country,CIPA Index,,Year range (slider),,,,
+,,,6,3,11,4.4.3.1f. Identity Documentation,"Legal identification is essential for accessing government services, participating in the economy, and ensuring tax compliance.",Stacked bar chart,Country,Country's Population,,Year range (slider),,,,
+,,,6,3,12,4.4.3.1g. Public access to information (in Factor 3: Open Government  indicator: 3.2 Right to information),"Assesses fiscal transparency and citizen engagement in public finance management,   highlighting the critical role of governments in proactively disclosing essential budget documents.",Bar chart,Country,Number of official documents publically available.,,Year range (slider),,,,
+,,,6,3,13,4.4.3.1h. Institutions to combat crime (Factor 8: Criminal Justice),"Measures the strength and effectiveness of legal and enforcement frameworks in combating illicit financial flows (IFFs), corruption, and organized crime",Bar chart,Country,Number of insitutions available to combat crime. ,,Year range (slider),,,,
+,,,6,3,14,"4.4.3.2.a Operating Metrics Audit  (a.a. criminal investigations, a.b. dispute resolution. A.c. audit and tax crime investigation) ","Assesses the efficiency of a country's tax audit system, focusing on audit coverage, recovery rates, and case closure timelines.",Bar chart,Country,Number of white-collar crime investigations held,,Year range (slider),,,,
+,,,6,3,15,"4.4.3.2.b. Resources and ICT infrastructure (b.a Tax administration expenditures (in thousands in local currency for salary, operating, ICT and capital) (b.b. Total tax administration FTEs - Derived) (b.c.operational ICT solutions: Operational ICT solutions of the administration are…)","Evaluates the technological and operational capacity of tax administrations, a key factor for effective revenue mobilization.",Line chart,Year,Tax administration expenditures,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,16,"4.4.3.2.c. Staff metrics (c.a. Staff strength level, c.b. Staff academic qualifications, c.d. Staff length of service)","Assesses the human resource capacity within tax administrations, including staffing levels, qualifications, and service duration.",Line chart,Year,Staff strength ,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,17,4.4.4.1. Financial Secrecy Index ,"Measures financial opacity, which enables tax evasion and illicit financial flows (IFFs) through mechanisms like banking secrecy laws, anonymous shell companies, and lack of beneficial ownership transparency.",Bar chart,Country,Financial Secrecy Index,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,18,"4.4.4.2.a. Corporate Tax Haven Index ranks (CTHI score, rank, share (all years))","This indicator reflects a country’s role in enabling corporate tax avoidance through secrecy laws, loopholes, and harmful tax practices.",Bar chart,Country,CTHI,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,19,4.4.4.2.b. Countries’ profit and tax loss to global corporate tax abuse (1. Annual tax loss: Corporate tax abuse (USD million) 2. Annual tax loss: Corporate tax abuse (% of GDP),Quantifies the loss of tax revenue from multinational corporations exploiting tax havens and engaging in corporate tax abuse.,Line chart,Year,Percentage of corporate tax abuse (% of GDP),,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,20,4.4.5.1. Tax Buoyancy: Ratio of change in tax revenue in relation to change in gross domestic product or GDP of an economy. It measures how responsive a taxation policy is to growth in economic activities.,"Measures the responsiveness of tax revenue to economic growth, with a higher ratio indicating an efficient tax system.",Line chart,Year,Tax buyouncy index,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,21,4.4.5.2. Social impact of lost tax (Tax loss equivalent to % of health and education budget -sotj20_loss_total_share_healthexpenses all years),"Measures the social impact of lost tax revenue, particularly in terms of health and education budgets.",Line chart,Year,Tax loss equivalent to % of health and education budget,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,22,4.4.6.1.a.specific sectors: lists the laws and regulations that govern the taxation and mining activity of each country. (count the number of general regime and mining regime),Evaluates the legal and regulatory frameworks governing taxation and mining activities in African countries.,Bar chart,Country,Number of general regime and mining regime,,"Country (multi-select)
+Year range (slider)",,,,
+,,,6,3,23,4.4.6.1.a. Rent sharing between state and investors ,"Assesses the degree of transparency in tax payments, contracts, and revenue flows within the extractive industries—key for combatting corruption and resource mismanagement.",Line chart,Year,Number of tax payment contracts,,"Country (multi-select)
+Year range (slider)",,,,
+,,,,,,,,,,,,,,,,

@@ -77,25 +77,7 @@ tab1, tab2 = st.tabs([
 
 # === Tab 1: 4.1.1 ===
 with tab1:
-    # --- Map for PEFA PI-1 ---
-    st.markdown("#### Geographical Distribution (PEFA PI-1)")
     indicator_tab1 = "PEFA: PI-1 Aggregate expenditure out-turn"
-    uv.render_indicator_map(
-        df=df_filtered,
-        indicator_label=indicator_tab1,
-        title="", # No title needed, context from tab
-        description="Latest available scores for PEFA PI-1.",
-        reference_data=ref_data,
-        year_range=filters.get('year_range'),
-        map_options={
-            'color_continuous_scale': 'Viridis',
-            'range_color': [0, 4]
-        },
-        container_key="topic4_1_tab1_map" # Unique key for this map
-    )
-    st.divider()
-
-    # --- Chart for PEFA PI-1 (Existing) ---
     uv.render_indicator_section(
         df=df_filtered,
         indicator_label=indicator_tab1,
@@ -106,46 +88,36 @@ with tab1:
         year_range=filters.get('year_range'),
         chart_options={'x': 'country_or_area', 'y': 'value', 'color': 'year', 'sort_x': '-y'},
         show_data_table=True,
-        container_key="topic4_1_tab1_chart" # Updated key
+        container_key="topic4_1_tab1_chart"
     )
-
-    # --- Learn More Expander (Existing) ---
+    # --- Learn More Expander (directly under chart) ---
     with st.expander("🔍 Learn more about Indicator 4.1.1"):
-        t1, t2, t3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
-        with t1:
-            st.markdown("This indicator measures how closely actual government expenditures align with the approved budget. It reflects the efficiency of fiscal planning and budget execution.")
-        with t2:
-            st.markdown("""
-- **Efficiency:** Assesses whether public spending adheres to planned allocations, minimizing budget deviations and cost overruns.
-- **Effectiveness:** Ensures that government expenditure remains within set limits, promoting fiscal discipline and stable public financial management.
-            """)
-        with t3:
-            st.markdown("""
-The Public Expenditure Efficiency Index (Ratio of actual project costs to budgeted costs) is used to evaluate how well spending follows planned budgets.
-PEFA-WB's Aggregate Expenditure Outturn is used as a proxy since it directly measures the extent to which government spending aligns with the approved budget.
-            """)
-
-# === Tab 2: 4.1.2 ===
-with tab2:
-    # --- Map for PEFA PI-2 ---
-    st.markdown("#### Geographical Distribution (PEFA PI-2)")
-    indicator_tab2 = "PEFA: PI-2 Expenditure composition outturn"
+        t1_1, t1_2, t1_3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
+        with t1_1:
+            st.markdown("Aggregate deviation of actual expenditure from the original budget, measured as a percentage.")
+        with t1_2:
+            st.markdown("- **Efficiency**: Budget credibility.  \n- **Effectiveness**: Predictable resource flow.")
+        with t1_3:
+            st.markdown("PEFA standard indicator, globally recognized.")
+    st.divider()
     uv.render_indicator_map(
         df=df_filtered,
-        indicator_label=indicator_tab2,
-        title="", # No title needed, context from tab
-        description="Latest available scores for PEFA PI-2.",
+        indicator_label=indicator_tab1,
+        title="",
+        description="Geographical distribution of latest scores.",
         reference_data=ref_data,
         year_range=filters.get('year_range'),
         map_options={
-            'color_continuous_scale': 'Plasma', # Different scale example
+            'color_continuous_scale': 'Viridis',
             'range_color': [0, 4]
         },
-        container_key="topic4_1_tab2_map" # Unique key for this map
+        container_key="topic4_1_tab1_map"
     )
     st.divider()
 
-    # --- Chart for PEFA PI-2 (Existing) ---
+# === Tab 2: 4.1.2 ===
+with tab2:
+    indicator_tab2 = "PEFA: PI-2 Expenditure composition outturn"
     uv.render_indicator_section(
         df=df_filtered,
         indicator_label=indicator_tab2,
@@ -156,28 +128,53 @@ with tab2:
         year_range=filters.get('year_range'),
         chart_options={'x': 'year', 'y': 'value', 'color': 'country_or_area'},
         show_data_table=True,
-        container_key="topic4_1_tab2_chart" # Updated key
+        container_key="topic4_1_tab2_chart"
     )
-
-    # --- Learn More Expander (Existing) ---
+    # --- Learn More Expander (directly under chart) ---
     with st.expander("🔍 Learn more about Indicator 4.1.2"):
-        t1, t2, t3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
-        with t1:
-            st.markdown("This indicator measures whether government expenditures align with policy priorities, ensuring that funds are directed toward critical sectors such as education, health, and infrastructure.")
-        with t2:
-            st.markdown("""
-- **Efficiency:** Evaluates if public spending is allocated as planned, reducing inefficiencies and ensuring fiscal responsibility.
-- **Effectiveness:** Demonstrates whether financial resources are used to support sustainable development and social welfare.
-            """)
-        with t3:
-            st.markdown("""
-The Expenditure Quality Score (Percentage of public spending directed toward development priorities) tracks whether expenditures are used for key sectors.
-PEFA-WB's Expenditure Composition Outturn is used as a proxy because it assesses if resources are allocated according to national priorities, ensuring minimal waste.
-            """)
+        t2_1, t2_2, t2_3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
+        with t2_1:
+            st.markdown("Variance in expenditure composition compared to the original budget by functional classification.")
+        with t2_2:
+            st.markdown("- **Efficiency**: Strategic allocation adherence.  \n- **Effectiveness**: Predictability of sector funding.")
+        with t2_3:
+            st.markdown("PEFA standard indicator.")
+    st.divider()
+    uv.render_indicator_map(
+        df=df_filtered,
+        indicator_label=indicator_tab2,
+        title="",
+        description="Geographical distribution of latest scores.",
+        reference_data=ref_data,
+        year_range=filters.get('year_range'),
+        map_options={
+            'color_continuous_scale': 'Plasma',
+            'range_color': [0, 4]
+        },
+        container_key="topic4_1_tab2_map"
+    )
+    st.divider()
 
-# === Data Explorer (Reintroduced) ===
+# === Data Gap Expander (once per page, after all tabs) ===
+all_indicators_4_1 = {
+    "Aggregate Expenditure Outturn (4.1.1)": "PEFA: PI-1 Aggregate expenditure out-turn",
+    "Expenditure Composition Outturn (4.1.2)": "PEFA: PI-2 Expenditure composition outturn"
+}
+africa_countries = ref_data[ref_data['Region'] == 'Africa']['Country'].unique()
+df_africa = df_main[df_main['country_or_area'].isin(africa_countries)]
 st.divider()
-# uv.create_data_explorer(df_filtered, key_prefix="topic4_1")
+with st.expander("Understand the data gap in Africa for this topic"):
+    selected_gap_indicator = st.selectbox(
+        "Select indicator to view data availability:",
+        options=list(all_indicators_4_1.keys()),
+        key="topic4_1_gap_indicator_select"
+    )
+    uv.render_data_availability_heatmap(
+        df=df_africa,
+        indicator_label=all_indicators_4_1[selected_gap_indicator],
+        title=f"Data Availability for {selected_gap_indicator} (Africa)",
+        container_key="topic4_1_gap"
+    )
 
 # Optional Debug section (can be uncommented if needed)
 # with st.expander("Debug Info"):

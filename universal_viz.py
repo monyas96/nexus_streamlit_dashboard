@@ -736,61 +736,17 @@ def filter_dataframe_by_selections(df, filters, ref_data):
     # --- 3. Process Regional Aggregate Selections ---
     if region_aggregate_labels:
         required_value_col = 'value' # Column to aggregate
-        # Identify essential grouping columns (must exist in df_processed)
-        grouping_cols = ['year', 'indicator_label'] # Base columns
-        # Add other potential non-numeric columns to preserve if they exist
-        optional_grouping_cols = ['indicator_id', 'units', 'series'] # Example optional cols
-        for col in optional_grouping_cols:
-             if col in df_processed.columns and col not in grouping_cols:
-                 # Check if the column is suitable for grouping (mostly non-numeric)
-                 if not pd.api.types.is_numeric_dtype(df_processed[col]) or df_processed[col].nunique() < len(df_processed)*0.5 : # Heuristic
-                     grouping_cols.append(col)
-
-        # Check if all grouping columns and value column exist
-        missing_cols = [c for c in grouping_cols + [required_value_col] if c not in df_processed.columns]
-        if missing_cols:
-            st.warning(f"Cannot perform regional aggregation. Main data is missing required columns: {missing_cols}. Skipping aggregation.")
-        else:
-            for agg_label in region_aggregate_labels:
-                region_name = agg_label.replace(" (Region Average)", "")
-                # Find countries in this region from ref_data (using 'Region' and 'Country')
-                countries_in_region = ref_data[ref_data['Region'] == region_name]['Country'].unique().tolist()
-
-                if not countries_in_region:
-                    st.warning(f"No countries found for region '{region_name}' in reference data. Cannot calculate average.")
-                    continue
-
-                # Filter the year-filtered data for these countries
-                # Use the correct country column name from df_processed
-                country_col_in_df = 'country_or_area' if 'country_or_area' in df_processed.columns else 'Country' # Use 'Country' as fallback
-                if country_col_in_df not in df_processed.columns:
-                     st.warning(f"Could not find country column ('country_or_area' or 'Country') in main data for regional aggregation of '{region_name}'. Skipping.")
-                     continue
-
-                region_df = df_processed[df_processed[country_col_in_df].isin(countries_in_region)].copy()
-
-                if region_df.empty:
-                    # st.info(f"No data found for countries in region '{region_name}' within the selected year range to calculate average.")
-                    continue
-
-                # Perform aggregation (mean)
-                try:
-                    # Ensure value column is numeric before aggregation
-                    if pd.api.types.is_numeric_dtype(region_df[required_value_col]):
-                         # Group by year and indicator, calculate mean
-                         aggregated_data = region_df.groupby(grouping_cols, as_index=False, observed=True)[required_value_col].mean(numeric_only=True)
-                         # Assign the aggregate label to the country column
-                         aggregated_data[country_col_in_df] = agg_label
-                         # Add a pseudo iso3 code for compatibility if iso3 exists
-                         if 'iso3' in df_processed.columns:
-                              aggregated_data['iso3'] = f"{region_name[:3].upper()}_AVG" # Example pseudo code
-                         results_dfs.append(aggregated_data)
-                    else:
-                        # st.warning(f"Value column '{required_value_col}' is not numeric for region '{region_name}'. Cannot calculate average.")
-                        pass # Silently skip if value is not numeric for this region/indicator
-
-                except Exception as e:
-                    st.error(f"Error during aggregation for region '{region_name}': {e}")
+        grouping_cols = ['year', 'indicator_label']
+        country_col_in_df = 'country_or_area' if 'country_or_area' in df_processed.columns else 'Country'
+        for region_label in region_aggregate_labels:
+            region_name = region_label.replace(" (Region Average)", "")
+            countries_in_region = ref_data[ref_data['Region'] == region_name]['Country'].unique().tolist()
+            region_df = df_processed[df_processed[country_col_in_df].isin(countries_in_region)]
+            if not region_df.empty and required_value_col in region_df.columns:
+                # Group by year, indicator, and calculate mean
+                agg_df = region_df.groupby(['year', 'indicator_label'], as_index=False)[required_value_col].mean()
+                agg_df[country_col_in_df] = region_label
+                results_dfs.append(agg_df)
 
     # --- 4. Combine Results ---
     if not results_dfs:
@@ -1315,9 +1271,11 @@ def render_indicator_map(
             width=map_options.get('width', None)
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        # Display the chart if data is available
+        if fig:
+            st.plotly_chart(fig, use_container_width=True, key=f"{container_key}_plotly") # Added unique key
 
-        # --- Optional: Data Table for the selected year ---
+        # Optional: Data table display
         show_map_data = map_options.get('show_data_table', True) # Default to True
         if show_map_data:
             with st.expander(f"View Data for {map_year or 'Selected Data'}"):
@@ -1388,51 +1346,25 @@ def setup_sidebar_filters(ref_data, df=None, key_prefix=""):
     st.sidebar.header("Filters")
 
     # --- Region Selection ---
-    # Use 'Region' column from ref_data
-    regions = ["All Regions"] + sorted(ref_data['Region'].dropna().unique())
+    regions = sorted(ref_data['Region'].dropna().unique())
     selected_region = st.sidebar.selectbox(
         "Select Region",
         regions,
         key=f"{key_prefix}_region_select"
     )
 
-    # --- Country Selection (with Regional Aggregates) ---
-    # Get unique countries from reference data (using 'Country' column)
-    all_countries = sorted(ref_data['Country'].dropna().unique())
-    # Generate regional aggregate labels
-    region_aggregate_labels = {region: f"{region} (Region Average)" for region in regions if region != "All Regions"}
-
-    # Determine available options based on selected region
-    available_options = []
-    if selected_region == "All Regions":
-        available_options = all_countries + list(region_aggregate_labels.values())
-    else:
-        # Countries in the selected region (using 'Region' and 'Country')
-        countries_in_region = sorted(ref_data[ref_data['Region'] == selected_region]['Country'].dropna().unique())
-        available_options = countries_in_region
-        # Add the specific regional aggregate option for the selected region
-        if selected_region in region_aggregate_labels:
-            available_options.append(region_aggregate_labels[selected_region])
-
-    # Sort combined list for display
-    available_options = sorted(list(set(available_options))) # Ensure uniqueness and sort
-
-    # Set default selection: If a region is selected, default to its aggregate
-    default_selection = []
-    if selected_region != "All Regions" and selected_region in region_aggregate_labels:
-         # Check if the aggregate label is actually in the available options (it should be)
-         agg_label = region_aggregate_labels[selected_region]
-         if agg_label in available_options:
-              default_selection = [agg_label]
-    # else: # Optionally default to something if "All Regions" is selected
-        # default_selection = [] # Or maybe default to a specific country or aggregate
+    # --- Country Selection (with Regional Aggregate) ---
+    # Get all countries in the selected region
+    countries_in_region = sorted(ref_data[ref_data['Region'] == selected_region]['Country'].dropna().unique())
+    # Add region average if it exists in the data
+    region_average_label = f"{selected_region} (Region Average)"
+    region_countries_with_avg = countries_in_region.copy()
+    region_countries_with_avg.append(region_average_label)
 
     selected_countries = st.sidebar.multiselect(
-        "Select Countries / Regional Average (max 10 total)",
-        options=available_options,
-        # Default can be tricky, maybe leave empty or default to regional aggregate if region selected?
-        default=default_selection,
-        max_selections=10,
+        "Select Countries / Regional Average",
+        options=region_countries_with_avg,
+        default=region_countries_with_avg,  # All selected by default
         key=f"{key_prefix}_country_multiselect"
     )
 
@@ -1449,7 +1381,6 @@ def setup_sidebar_filters(ref_data, df=None, key_prefix=""):
     else:
          min_year_slider = min_year
          max_year_slider = max_year
-
 
     start_year, end_year = st.sidebar.slider(
         "Select Year Range",
@@ -1702,3 +1633,76 @@ def get_indicator_metadata(indicator_label):
         # Add more descriptions here
     }
     return metadata.get(indicator_label, "No description available for this indicator.")
+
+def render_data_availability_heatmap(
+    df,
+    indicator_label,
+    country_col='country_or_area',
+    year_col='year',
+    value_col='value',
+    title="Data Availability Heatmap",
+    container_key=None,
+    all_countries=None
+):
+    """
+    Displays a heatmap showing which countries and years have data for a given indicator.
+    Presence = 1, Absence = 0. If all_countries is provided, ensures all are shown.
+    """
+    import streamlit as st
+    import plotly.express as px
+    # Filter for the indicator
+    df_ind = df[df['indicator_label'] == indicator_label].copy()
+    # Pivot: countries as rows, years as columns, 1 if data exists
+    if not df_ind.empty:
+        df_ind['has_data'] = 1
+        heatmap_df = df_ind.pivot_table(
+            index=country_col,
+            columns=year_col,
+            values='has_data',
+            aggfunc='max',
+            fill_value=0
+        )
+    else:
+        # If no data at all, create an empty DataFrame with no columns
+        heatmap_df = pd.DataFrame()
+    # If all_countries is provided, reindex to show all (fill missing with 0)
+    if all_countries is not None:
+        heatmap_df = heatmap_df.reindex(all_countries, fill_value=0)
+    # If still empty, show info
+    if heatmap_df.empty or heatmap_df.shape[1] == 0:
+        st.info(f"No data available for indicator: {indicator_label}")
+        return
+    # Sort years for readability
+    heatmap_df = heatmap_df.sort_index(axis=1)
+    # Plotly heatmap
+    fig = px.imshow(
+        heatmap_df,
+        labels=dict(x="Year", y="Country", color="Data Present"),
+        color_continuous_scale=[(0, "#eee"), (1, "#1f77b4")],
+        aspect="auto",
+        title=title
+    )
+    fig.update_xaxes(side="top")
+    fig.update_layout(margin=dict(l=0, r=0, t=40, b=0))
+    st.plotly_chart(fig, use_container_width=True, key=f"{container_key}_heatmap" if container_key else None)
+
+def load_main_data(file_path="data/nexus.parquet"):
+    """
+    Loads the main dataset from a parquet file, with basic validation and error handling.
+    Returns a DataFrame with columns: indicator_label, country_or_area, year, value, iso3 (if available).
+    """
+    @st.cache_data
+    def _load(file_path):
+        try:
+            df = pd.read_parquet(file_path)
+            required_cols = ['indicator_label', 'country_or_area', 'year', 'value', 'iso3']
+            if not all(col in df.columns for col in required_cols):
+                st.warning(f"Warning: Main data might be missing some expected columns ({required_cols}).")
+            return df
+        except FileNotFoundError:
+            st.error(f"Error: The main data file was not found at {file_path}")
+            return pd.DataFrame()
+        except Exception as e:
+            st.error(f"An error occurred while loading the main data: {e}")
+            return pd.DataFrame()
+    return _load(file_path)

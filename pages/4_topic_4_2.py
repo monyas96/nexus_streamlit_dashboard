@@ -107,36 +107,20 @@ tab1, tab2 = st.tabs([
 
 # === Tab 1: 4.2.1 ===
 with tab1:
-    # --- Map for Tax Revenue % GDP ---
-    st.markdown("#### Geographical Distribution (Tax Revenue % GDP)")
-    indicator_tab1_main = "Tax Revenue - % of GDP - value" # Main indicator for this tab
-    uv.render_indicator_map(
-        df=df_filtered,
-        indicator_label=indicator_tab1_main,
-        title="", # No title needed, context from tab
-        description="Latest available Tax Revenue as % of GDP.",
-        reference_data=ref_data,
-        year_range=filters.get('year_range'),
-        map_options={'color_continuous_scale': 'Blues'},
-        container_key="topic4_2_tab1_map" # Unique key for this map
-    )
-    st.divider()
-
-    # --- Chart for Tax Revenue % GDP (Existing) ---
-    # indicator_tax_rev = "Tax Revenue - % of GDP - value" # Already defined above
+    # --- Chart Section 1 (4.2.1.1) ---
+    indicator_tab1_main = "Tax Revenue - % of GDP - value"
     uv.render_indicator_section(
         df=df_filtered,
         indicator_label=indicator_tab1_main,
         title="Indicator 4.2.1.1: Tax Revenue as % of GDP",
         description="Measures the total tax revenue collected as a proportion of the country's GDP.",
-        chart_type="line", # Show trend over time
+        chart_type="line",
         selected_countries=filters.get('selected_countries'),
         year_range=filters.get('year_range'),
-        chart_options={'x': 'year', 'y': 'value', 'color': 'country_or_area'}, # Line chart config
+        chart_options={'x': 'year', 'y': 'value', 'color': 'country_or_area'},
         show_data_table=True,
-        container_key="topic4_2_tab1_taxrev_chart" # Updated key
+        container_key="topic4_2_tab1_taxrev_chart"
     )
-    # Expander for Tax Revenue % GDP (Existing)
     with st.expander("🔍 Learn more about Indicator 4.2.1.1"):
         t1_1, t1_2, t1_3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
         with t1_1:
@@ -145,15 +129,11 @@ with tab1:
             st.markdown("- **Efficiency**: Shows how well revenue is raised from the economy.  \n- **Effectiveness**: Reflects fiscal independence.")
         with t1_3:
             st.markdown("This World Bank indicator is standard, widely used, and globally comparable.")
-
     st.divider()
 
-    # --- Indicator: Taxpayer Base Expansion (Using composition chart as proxy) (Existing) ---
+    # --- Chart Section 2 (4.2.1.2 Proxy) ---
     st.markdown("### 🧾 Indicator 4.2.1.2: Taxpayer Base Expansion")
-    st.caption("Proxied by Tax Revenue Composition (% of GDP)") # Updated caption to reflect chart
-
-    # --- Inserted Tax Revenue Composition Chart Logic (Existing) ---
-    # Define the specific indicators for the composition chart
+    st.caption("Proxied by Tax Revenue Composition (% of GDP)")
     tax_composition_indicators = [
         "CIT - % of GDP - Tax Revenue Percent",
         "Income Taxes - % of GDP - Tax Revenue Percent",
@@ -162,30 +142,19 @@ with tab1:
         "Trade Taxes - % of GDP - Tax Revenue Percent",
         "VAT - % of GDP - Tax Revenue Percent"
     ]
-
-    # Filter the main filtered data for these specific indicators
-    # (df_filtered is already filtered by sidebar selections)
     df_tax_composition = df_filtered[df_filtered['indicator_label'].isin(tax_composition_indicators)].copy()
-
-    # Add chart type selection
     chart_type_composition = st.radio(
-        "Select Chart Type for Composition Proxy:", # Updated label slightly
+        "Select Chart Type for Composition Proxy:",
         ("Line Chart (Trend over Time)", "Stacked Bar Chart (Latest Year by Country)"),
-        key="topic4_2_tab1_composition_proxy_chart_type", # Ensure unique key
+        key="topic4_2_tab1_composition_proxy_chart_type",
         horizontal=True
     )
-
-    # Check if data exists after filtering for these indicators
     if not df_tax_composition.empty:
-        # Ensure 'value' is numeric
         if pd.api.types.is_numeric_dtype(df_tax_composition['value']):
             try:
-                # Create the chart based on selection
                 import plotly.express as px
-                import plotly.graph_objects as go # Ensure go is imported for empty chart case
-
-                data_table_df = pd.DataFrame() # Initialize for data table
-
+                import plotly.graph_objects as go
+                data_table_df = pd.DataFrame()
                 if chart_type_composition == "Line Chart (Trend over Time)":
                     fig_composition = px.line(
                         df_tax_composition,
@@ -199,26 +168,19 @@ with tab1:
                     )
                     fig_composition.update_layout(legend_title_text='Tax Type')
                     st.plotly_chart(fig_composition, use_container_width=True)
-                    data_table_df = df_tax_composition # Use full data for table
-
+                    data_table_df = df_tax_composition
                 elif chart_type_composition == "Stacked Bar Chart (Latest Year by Country)":
-                    # Find the latest year *value* for each country/region average
                     df_tax_composition['latest_year'] = df_tax_composition.groupby('country_or_area')['year'].transform('max')
-                    # Filter to keep only rows matching the latest year for each country/region
                     df_latest_composition = df_tax_composition[df_tax_composition['year'] == df_tax_composition['latest_year']].copy()
-                    # Drop the temporary column
                     df_latest_composition = df_latest_composition.drop(columns=['latest_year'])
-
                     if df_latest_composition.empty:
                          st.warning("Could not extract latest year data for the stacked bar chart.")
                          fig_composition = go.Figure().update_layout(title="Stacked Bar Chart (No Data for Latest Year)", height=300)
                          st.plotly_chart(fig_composition, use_container_width=True)
-                         data_table_df = pd.DataFrame() # Empty df for table
+                         data_table_df = pd.DataFrame()
                     else:
-                        # Get the actual latest years to display in caption (handle potential multiple rows per country)
                         latest_year_map = df_latest_composition[['country_or_area', 'year']].drop_duplicates().set_index('country_or_area')['year'].to_dict()
                         year_text = ", ".join([f"{country} ({year})" for country, year in latest_year_map.items()])
-
                         fig_composition = px.bar(
                             df_latest_composition,
                             x='country_or_area',
@@ -231,24 +193,17 @@ with tab1:
                         fig_composition.update_layout(legend_title_text='Tax Type')
                         st.plotly_chart(fig_composition, use_container_width=True)
                         st.caption(f"Showing latest available year per country/region: {year_text}")
-                        data_table_df = df_latest_composition # Use latest data for table
-
-                # Optional: Show data table for the displayed chart (check if data exists)
+                        data_table_df = df_latest_composition
                 if not data_table_df.empty:
                     if st.checkbox("Show Data Table for Composition Proxy Chart", key="topic4_2_tab1_composition_proxy_table_cb"):
                         st.dataframe(data_table_df[['country_or_area', 'year', 'indicator_label', 'value']].sort_values(by=['country_or_area', 'indicator_label', 'year']))
-
             except Exception as e:
                 st.error(f"An error occurred while creating the tax composition proxy chart: {e}")
         else:
              st.warning(f"Cannot create chart: The 'value' column for one or more required tax composition indicators is not numeric (dtype: {df_tax_composition['value'].dtype}).")
-
     else:
         st.warning(f"No data found for the required tax composition indicators used as proxy for the selected filters: {filters.get('selected_countries')}, Years: {filters.get('year_range')}")
         st.caption(f"Required indicators for proxy: {', '.join(tax_composition_indicators)}")
-    # --- END: Inserted Tax Revenue Composition Chart Logic ---
-
-    # --- Keep the expander (Existing) ---
     with st.expander("🔍 Learn more about Indicator 4.2.1.2"):
         b1, b2, b3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
         with b1:
@@ -256,59 +211,53 @@ with tab1:
         with b2:
             st.markdown("- **Efficiency**: Reflects broadening of the tax system.  \n- **Effectiveness**: Signals outreach and inclusion.")
         with b3:
-            st.markdown("ATAF metrics on large taxpayer units and general taxpayer growth are used as a proxy. **Chart above shows Domestic Revenue trend.**") # Added note to justification
+            st.markdown("ATAF metrics on large taxpayer units and general taxpayer growth are used as a proxy. **Composition chart above shows trends of tax types as % GDP.**")
+    st.divider()
+    st.markdown("#### Geographical Distribution")
+    map_indicators_tab1 = {
+        "Tax Revenue (% of GDP)": "Tax Revenue - % of GDP - value",
+        "CIT (% of GDP)": "CIT - % of GDP - Tax Revenue Percent",
+        "VAT (% of GDP)": "VAT - % of GDP - Tax Revenue Percent",
+        "Income Taxes (% of GDP)": "Income Taxes - % of GDP - Tax Revenue Percent",
+        "Excise Taxes (% of GDP)": "Excise Taxes - % of GDP - Tax Revenue Percent",
+        "Trade Taxes (% of GDP)": "Trade Taxes - % of GDP - Tax Revenue Percent",
+        "Other Taxes (% of GDP)": "Other Taxes - % of GDP - Tax Revenue Percent"
+    }
+    selected_map_indicator_name_tab1 = st.selectbox(
+        "Select Indicator for Map View:",
+        options=list(map_indicators_tab1.keys()),
+        key="topic4_2_tab1_map_indicator_select_moved"
+    )
+    map_indicator_label_tab1 = map_indicators_tab1[selected_map_indicator_name_tab1]
+    uv.render_indicator_map(
+        df=df_filtered,
+        indicator_label=map_indicator_label_tab1,
+        title="",
+        description=f"Geographical distribution of latest {selected_map_indicator_name_tab1}.",
+        reference_data=ref_data,
+        year_range=filters.get('year_range'),
+        map_options={'color_continuous_scale': 'Blues'},
+        container_key="topic4_2_tab1_map_moved"
+    )
+    st.divider()
 
 # === Tab 2: 4.2.2 ===
 with tab2:
-    # --- START: Map Section for Tab 2 Indicators ---
-    st.markdown("#### Geographical Distribution")
-
-    map_indicators_tab2 = {
-        "Tax Effort Ratio": "Tax effort (ratio) [tax_eff]",
-        "Tax Buoyancy": "Tax buoyancy [by_tax]"
-    }
-
-    selected_map_indicator_name_tab2 = st.selectbox(
-        "Select Indicator for Map View:",
-        options=list(map_indicators_tab2.keys()),
-        key="topic4_2_tab2_map_indicator_select"
-    )
-    map_indicator_label_tab2 = map_indicators_tab2[selected_map_indicator_name_tab2]
-    # st.markdown(f"**Map:** {selected_map_indicator_name_tab2}") # Optional: Show which indicator is mapped
-
-    uv.render_indicator_map(
-        df=df_filtered,
-        indicator_label=map_indicator_label_tab2,
-        title="", # No title needed, context from tab/selection
-        description=f"Latest available data for {selected_map_indicator_name_tab2}.",
-        reference_data=ref_data,
-        year_range=filters.get('year_range'),
-        map_options={'color_continuous_scale': 'YlGnBu'}, # Example color scale
-        container_key="topic4_2_tab2_map" # Unique key for this map
-    )
-    st.divider()
-    # --- END: Map Section for Tab 2 Indicators ---
-
-    # --- Indicator 4.2.2.1: Tax Collection Efficiency Score (Using Data Proxy) ---
+    indicator_tab2_eff = "Tax effort (ratio) [tax_eff]"
     st.markdown("### 📈 Indicator 4.2.2.1: Tax Collection Efficiency Score")
-    indicator_tab2_eff = "Tax effort (ratio) [tax_eff]" # Proxy indicator label
-    st.caption(f"Proxied by: {indicator_tab2_eff}") # Updated caption
-
-    # --- Render chart instead of image ---
+    st.caption(f"Proxied by: {indicator_tab2_eff}")
     uv.render_indicator_section(
         df=df_filtered,
         indicator_label=indicator_tab2_eff,
-        title="", # Title handled by markdown above
+        title="",
         description="Trend of the tax effort ratio.",
-        chart_type="line", # Line chart for trend
+        chart_type="line",
         selected_countries=filters.get('selected_countries'),
         year_range=filters.get('year_range'),
         chart_options={'x': 'year', 'y': 'value', 'color': 'country_or_area'},
         show_data_table=True,
         container_key="topic4_2_tab2_eff_chart"
     )
-
-    # --- Keep Expander ---
     with st.expander("🔍 Learn more about Indicator 4.2.2.1"):
         c1, c2, c3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
         with c1:
@@ -316,30 +265,23 @@ with tab2:
         with c2:
             st.markdown("- **Efficiency**: Shows capacity of collection systems.  \n- **Effectiveness**: Closes gaps between potential and actual.")
         with c3:
-            st.markdown("Tax effort is a widely recognized proxy in global evaluations. **Chart above shows Tax effort (ratio) [tax_eff] trend.**") # Updated justification note
-
+            st.markdown("Tax effort is a widely recognized proxy in global evaluations. **Chart above shows Tax effort (ratio) [tax_eff] trend.**")
     st.divider()
-
-    # --- Indicator 4.2.2.2: Reduction in Tax Evasion (Using Data Proxy) ---
+    indicator_tab2_buoy = "Tax buoyancy [by_tax]"
     st.markdown("### 🚫 Indicator 4.2.2.2: Reduction in Tax Evasion")
-    indicator_tab2_buoy = "Tax buoyancy [by_tax]" # Proxy indicator label
-    st.caption(f"Proxied by: {indicator_tab2_buoy}") # Updated caption
-
-    # --- Render chart instead of image ---
+    st.caption(f"Proxied by: {indicator_tab2_buoy}")
     uv.render_indicator_section(
         df=df_filtered,
         indicator_label=indicator_tab2_buoy,
-        title="", # Title handled by markdown above
+        title="",
         description="Trend of tax buoyancy.",
-        chart_type="line", # Line chart for trend
+        chart_type="line",
         selected_countries=filters.get('selected_countries'),
         year_range=filters.get('year_range'),
         chart_options={'x': 'year', 'y': 'value', 'color': 'country_or_area'},
         show_data_table=True,
         container_key="topic4_2_tab2_buoy_chart"
     )
-
-    # --- Keep Expander ---
     with st.expander("🔍 Learn more about Indicator 4.2.2.2"):
         d1, d2, d3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
         with d1:
@@ -347,8 +289,56 @@ with tab2:
         with d2:
             st.markdown("- **Efficiency**: Reflects stronger enforcement.  \n- **Effectiveness**: Reduces informal leakages.")
         with d3:
-            st.markdown("ATAF and OECD's buoyancy data show responsiveness of tax systems to growth. **Chart above shows Tax buoyancy [by_tax] trend.**") # Updated justification note
+            st.markdown("ATAF and OECD's buoyancy data show responsiveness of tax systems to growth. **Chart above shows Tax buoyancy [by_tax] trend.**")
+    st.divider()
+    st.markdown("#### Geographical Distribution")
+    map_indicators_tab2 = {
+        "Tax Effort Ratio": indicator_tab2_eff,
+        "Tax Buoyancy": indicator_tab2_buoy
+    }
+    selected_map_indicator_name_tab2 = st.selectbox(
+        "Select Indicator for Map View:",
+        options=list(map_indicators_tab2.keys()),
+        key="topic4_2_tab2_map_indicator_select_moved"
+    )
+    map_indicator_label_tab2 = map_indicators_tab2[selected_map_indicator_name_tab2]
+    uv.render_indicator_map(
+        df=df_filtered,
+        indicator_label=map_indicator_label_tab2,
+        title="",
+        description=f"Geographical distribution of latest {selected_map_indicator_name_tab2} scores.",
+        reference_data=ref_data,
+        year_range=filters.get('year_range'),
+        map_options={'color_continuous_scale': 'YlGnBu'},
+        container_key="topic4_2_tab2_map_moved"
+    )
+    st.divider()
 
-# === REMOVE Data Explorer ===
+# === Data Gap Expander (once per page, after all tabs) ===
+all_indicators_4_2 = {
+    "Tax Revenue as % of GDP (4.2.1.1)": "Tax Revenue - % of GDP - value",
+    "CIT (% of GDP)": "CIT - % of GDP - Tax Revenue Percent",
+    "Income Taxes (% of GDP)": "Income Taxes - % of GDP - Tax Revenue Percent",
+    "Excise Taxes (% of GDP)": "Excise Taxes - % of GDP - Tax Revenue Percent",
+    "Other Taxes (% of GDP)": "Other Taxes - % of GDP - Tax Revenue Percent",
+    "Trade Taxes (% of GDP)": "Trade Taxes - % of GDP - Tax Revenue Percent",
+    "VAT (% of GDP)": "VAT - % of GDP - Tax Revenue Percent",
+    "Tax Effort Ratio (4.2.2.1)": "Tax effort (ratio) [tax_eff]",
+    "Tax Buoyancy (4.2.2.2)": "Tax buoyancy [by_tax]"
+}
+africa_countries = ref_data[ref_data['Region'] == 'Africa']['Country'].unique()
+df_africa = df_main[df_main['country_or_area'].isin(africa_countries)]
 st.divider()
-# uv.create_data_explorer(df_filtered, key_prefix="topic4_2")
+with st.expander("Understand the data gap in Africa for this topic"):
+    selected_gap_indicator = st.selectbox(
+        "Select indicator to view data availability:",
+        options=list(all_indicators_4_2.keys()),
+        key="topic4_2_gap_indicator_select"
+    )
+    uv.render_data_availability_heatmap(
+        df=df_africa,
+        indicator_label=all_indicators_4_2[selected_gap_indicator],
+        title=f"Data Availability for {selected_gap_indicator} (Africa)",
+        container_key="topic4_2_gap",
+        all_countries=africa_countries
+    )

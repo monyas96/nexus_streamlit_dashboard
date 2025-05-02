@@ -18,7 +18,7 @@ Let’s break this down.
 st.divider()
 
 # === Step 1: Understanding Sustainable vs. Unsustainable Finance ===
-with st.expander("🔍 What is Sustainable vs. Unsustainable Finance?", expanded=True):
+with st.expander("🔍 What is Sustainable vs. Unsustainable Finance?", expanded=False):
     col1, col2 = st.columns(2)
 
     with col1:
@@ -52,7 +52,7 @@ Unsustainable finance prioritizes short-term fixes and leads to:
 st.divider()
 
 # === Step 2: Why It Matters for Africa ===
-with st.expander("🌍 Why Sustainable Finance Matters for African Development", expanded=True):
+with st.expander("🌍 Why Sustainable Finance Matters for African Development", expanded=False):
     st.markdown("""
 When African countries control and retain their wealth, they can:
 - Invest in national priorities.

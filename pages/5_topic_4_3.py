@@ -1,23 +1,32 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 parent_dir = str(Path(__file__).resolve().parent.parent)
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
-import universal_viz as uv
 import streamlit as st
 import pandas as pd
 from utils import render_logo_header
 import composite_indicator_methods as cim
+import universal_viz as uv
+from special_pages.tab_4_3_3 import render_tab_4_3_3
+
+# Country flag mapping (define at the very top to avoid NameError)
+country_flags = {
+    "South Africa": "🇿🇦",
+    "Nigeria": "🇳🇬",
+    "Kenya": "🇰🇪",
+    "Rwanda": "🇷🇼",
+    "Ghana": "🇬🇭"
+}
 
 render_logo_header()
-
 # === Top Bar ===
 col1, col2 = st.columns([0.8, 0.1])
 with col1:
     st.title("📊 Topic 4.3: Capital Markets")
 with col2:
-    st.page_link("pages/0_home.py", label="🏠 Back to Home")
+    st.page_link("pages/0_home.py", label="🏠 Back to Home", use_container_width=True)
 
 # === Intro ===
 st.markdown("""
@@ -25,6 +34,9 @@ Capital markets are essential for mobilizing domestic financial resources and ch
 A well-developed capital market reduces reliance on foreign financing, supports sustainable economic growth, and strengthens financial stability.  
 **Effective management of capital markets ensures that resources are directed toward areas that maximize national development.**
 """)
+
+# Add Africa-wide concentration sentence with footnote to the intro of Tab 4.3.3
+st.markdown('''In Africa, 92% of pension fund assets are concentrated in South Africa, Nigeria, Kenya, Namibia, and Botswana.<sup>1</sup>''', unsafe_allow_html=True)
 
 # --- Data Loading ---
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,8 +59,8 @@ tab1, tab2, tab3 = st.tabs([
 
 # === Tab 1: Market Capitalization ===
 with tab1:
+    st.markdown("The following are the indicators for this subtopic.")
     # 4.3.1.1 Stock Market Capitalization to GDP (calculated)
-    st.markdown("#### Indicator: Stock Market Capitalization to GDP")
     df_stock_cap = cim.calculate_stock_market_cap_to_gdp(df_filtered)
     df_stock_cap['indicator_label'] = 'Stock Market Cap to GDP (%)'
     uv.render_indicator_section(
@@ -58,7 +70,7 @@ with tab1:
             'year': 'year'
         }),
         indicator_label='Stock Market Cap to GDP (%)',
-        title="Stock Market Capitalization to GDP (%)",
+        title="Indicator 4.3.1.1: Stock Market Capitalization to GDP",
         description="Total market capitalization of the stock market as a percentage of GDP.",
         chart_type="line",
         selected_countries=filters.get('selected_countries'),
@@ -82,11 +94,10 @@ with tab1:
     st.divider()
 
     # 4.3.1.2 Bond Market Development (direct)
-    st.markdown("#### Indicator: Bond Market Development")
     uv.render_indicator_section(
         df=df_filtered,
         indicator_label="Portfolio investment, bonds (PPG + PNG) (NFL, current US$)",
-        title="Bond Market Development",
+        title="Indicator 4.3.1.2: Bond Market Development",
         description="Portfolio investment, bonds (PPG + PNG) (NFL, current US$)",
         chart_type="line",
         selected_countries=filters.get('selected_countries'),
@@ -106,7 +117,6 @@ with tab1:
     st.divider()
 
     # 4.3.1.3 Adequacy of International Reserves (calculated)
-    st.markdown("#### Indicator: Adequacy of International Reserves")
     df_reserves = cim.calculate_adequacy_of_international_reserves(df_filtered)
     df_reserves['indicator_label'] = 'Adequacy of International Reserves'
     uv.render_indicator_section(
@@ -116,7 +126,7 @@ with tab1:
             'year': 'year'
         }),
         indicator_label='Adequacy of International Reserves',
-        title="Adequacy of International Reserves",
+        title="Indicator 4.3.1.3: Adequacy of International Reserves",
         description="Ratio of International Reserves (BoP, current US$) to External Debt Stocks, Short-Term (DOD, Current US$)",
         chart_type="line",
         selected_countries=filters.get('selected_countries'),
@@ -229,7 +239,7 @@ with tab1:
         st.info(f"No data available for {selected_map_indicator} to display on the map.")
     st.divider()
 
-    # --- Debug Section ---
+    # === Debug Section (commented out) ===
     # with st.expander("🐞 Debug: Data for Calculated Indicators", expanded=False):
     #     st.markdown("**Stock Market Capitalization to GDP**")
     #     market_cap_col = 'Market capitalization of listed domestic companies (current US$)'
@@ -245,7 +255,7 @@ with tab1:
     #     st.dataframe(df_pivot_stock)
     #     st.write("Final Calculated DataFrame:")
     #     st.dataframe(df_stock_cap)
-
+    #
     #     st.markdown("**Adequacy of International Reserves**")
     #     reserves_col = 'International reserves (BoP, current US$)'
     #     debt_col = 'External debt stocks, short-term (DOD, current US$)'
@@ -263,71 +273,107 @@ with tab1:
 
 # === Tab 2: Financial Intermediation ===
 with tab2:
-    st.markdown("#### Indicator: Adequacy of International Reserves")
-    st.info("[Chart for Adequacy of International Reserves will appear here]")
+    st.markdown("The following are the indicators for this subtopic.")
+    # 4.3.2.1: Banking Sector Development Index (calculated)
+    df_banking_index = cim.calculate_banking_sector_development_index(df_filtered)
+    df_banking_index['indicator_label'] = 'Banking Sector Development Index'
+    uv.render_indicator_section(
+        df=df_banking_index.rename(columns={
+            'Banking Sector Development Index': 'value',
+            'country_or_area': 'country_or_area',
+            'year': 'year'
+        }),
+        indicator_label='Banking Sector Development Index',
+        title="Indicator 4.3.2.1: Banking Sector Development Index",
+        description="Measurement of the development and efficiency of the banking sector. Composite index based on capital, liquidity, and credit provision.",
+        chart_type="line",
+        selected_countries=filters.get('selected_countries'),
+        year_range=filters.get('year_range'),
+        chart_options={'x': 'year', 'y': 'value', 'color': 'country_or_area'},
+        show_data_table=True,
+        container_key="topic4_3_tab2_banking_index_chart"
+    )
     with st.expander("🔍 Learn more about Indicator 4.3.2.1"):
         t1_1, t1_2, t1_3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
         with t1_1:
-            st.markdown("Ratio of reserves to short-term external debt.")
+            st.markdown("Composite index capturing depth, access, and efficiency of banking systems.")
         with t1_2:
-            st.markdown("Efficiency: Reserve sufficiency  \nEffectiveness: Shock protection")
+            st.markdown("- **Efficiency**: Credit allocation.  \n- **Effectiveness**: Inclusive growth and financial stability.")
         with t1_3:
-            st.markdown("Direct indicator. Source: IMF.")
+            st.markdown("Calculated indicator. See methodology in documentation.")
     st.divider()
-    st.markdown("#### Indicator: Banking Sector Development Index")
-    st.info("[Chart for Banking Sector Development Index will appear here]")
+
+    # 4.3.2.2: Domestic Credit to GDP (direct)
+    uv.render_indicator_section(
+        df=df_filtered,
+        indicator_label="Domestic credit provided by financial sector (% of GDP)",
+        title="Indicator 4.3.2.2: Domestic Credit to GDP",
+        description="Ratio of private sector credit to GDP. Measures the financial resources provided to the private sector by financial corporations.",
+        chart_type="line",
+        selected_countries=filters.get('selected_countries'),
+        year_range=filters.get('year_range'),
+        chart_options={'x': 'year', 'y': 'value', 'color': 'country_or_area'},
+        show_data_table=True,
+        container_key="topic4_3_tab2_domcredit_chart"
+    )
     with st.expander("🔍 Learn more about Indicator 4.3.2.2"):
         t2_1, t2_2, t2_3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
         with t2_1:
-            st.markdown("Captures depth, access, and efficiency of banking systems.")
+            st.markdown("Measures the financial resources provided to the private sector by financial corporations as a percentage of GDP.")
         with t2_2:
-            st.markdown("Efficiency: Credit allocation  \nEffectiveness: Inclusive growth")
+            st.markdown("- **Efficiency**: Credit allocation.  \n- **Effectiveness**: Supports business growth and investment.")
         with t2_3:
-            st.markdown("Proxy: IMF FAS / World Bank Findex")
+            st.markdown("World Bank direct indicator.")
     st.divider()
-    st.markdown("#### Geographical Distribution")
-    st.info("[Map for Financial Intermediation will appear here]")
+
+    # Geographical Distribution Map Section
+    st.markdown("#### Geographical Distribution of Financial Intermediation Indicators")
+    df_domcredit_map = df_filtered[df_filtered['indicator_label'] == "Domestic credit provided by financial sector (% of GDP)"]
+    if 'Banking Sector Development Index' in df_banking_index.columns:
+        df_banking_index_map = df_banking_index.rename(columns={'Banking Sector Development Index': 'value'})
+        df_banking_index_map['indicator_label'] = 'Banking Sector Development Index'
+    else:
+        df_banking_index_map = pd.DataFrame()
+    map_indicators_tab2 = {
+        "Banking Sector Development Index (4.3.2.1)": df_banking_index_map,
+        "Domestic Credit to GDP (4.3.2.2)": df_domcredit_map
+    }
+    selected_map_indicator_tab2 = st.selectbox(
+        "Select indicator for map view:",
+        options=list(map_indicators_tab2.keys()),
+        key="topic4_3_tab2_map_indicator_select"
+    )
+    df_map_tab2 = map_indicators_tab2[selected_map_indicator_tab2]
+    indicator_label_map_tab2 = {
+        "Banking Sector Development Index (4.3.2.1)": "Banking Sector Development Index",
+        "Domestic Credit to GDP (4.3.2.2)": "Domestic credit provided by financial sector (% of GDP)"
+    }
+    if not df_map_tab2.empty:
+        uv.render_indicator_map(
+            df=df_map_tab2,
+            indicator_label=indicator_label_map_tab2[selected_map_indicator_tab2],
+            title="",
+            description=f"Geographical distribution of latest {selected_map_indicator_tab2} values.",
+            reference_data=ref_data,
+            year_range=filters.get('year_range'),
+            map_options={'color_continuous_scale': 'YlGnBu'},
+            container_key="topic4_3_tab2_map"
+        )
+    else:
+        st.info(f"No data available for {selected_map_indicator_tab2} to display on the map.")
     st.divider()
 
 # === Tab 3: Institutional Investors ===
 with tab3:
-    st.markdown("#### Indicator: Private Sector Credit to GDP")
-    st.info("[Chart for Private Sector Credit to GDP will appear here]")
-    with st.expander("🔍 Learn more about Indicator 4.3.3.1"):
-        t1_1, t1_2, t1_3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
-        with t1_1:
-            st.markdown("Measures credit provided to the private sector as % of GDP.")
-        with t1_2:
-            st.markdown("Efficiency: Credit expansion  \nEffectiveness: Business growth")
-        with t1_3:
-            st.markdown("World Bank direct indicator.")
-    st.divider()
-    st.markdown("#### Indicator: Pension & Sovereign Wealth Fund Investments")
-    st.info("[Chart for Pension & SWF Investments will appear here]")
-    with st.expander("🔍 Learn more about Indicator 4.3.3.2"):
-        t2_1, t2_2, t2_3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
-        with t2_1:
-            st.markdown("Share of pension/SWF assets invested in national markets.")
-        with t2_2:
-            st.markdown("Efficiency: Long-term allocation  \nEffectiveness: Domestic economic returns")
-        with t2_3:
-            st.markdown("Proxies from national fund reports / SWFI database.")
-    st.divider()
-    st.markdown("#### Geographical Distribution")
-    st.info("[Map for Institutional Investors will appear here]")
-    st.divider()
+    render_tab_4_3_3(filters, ref_data, country_flags, uv, cim)
 
 # === Data Gap Section ---
 all_indicators_4_3 = {
     "Stock Market Capitalization to GDP (4.3.1.1)": "Stock Market Cap to GDP (%)",
     "Bond Market Development (4.3.1.2)": "Portfolio investment, bonds (PPG + PNG) (NFL, current US$)",
     "Adequacy of International Reserves (4.3.2.1)": "Adequacy of International Reserves",
-    "Banking Sector Development Index (4.3.2.2)": "Banking Sector Development Index",
-    "Private Sector Credit to GDP (4.3.3.1)": "Domestic credit to private sector (% of GDP)",
-    "Pension & SWF Investments (4.3.3.2)": "Pension fund assets (% of GDP)"
+    "Banking Sector Development Index (4.3.2.2)": "Banking Sector Development Index"
 }
-
-# Standardize and merge calculated indicators with ref_data for data gap
 
 def standardize_gap_df(df, ref_data):
     if not df.empty:

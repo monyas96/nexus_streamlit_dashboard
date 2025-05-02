@@ -1,7 +1,11 @@
+import sys
+from pathlib import Path
+parent_dir = str(Path(__file__).resolve().parent.parent)
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
 import streamlit as st
 import pandas as pd
-from pathlib import Path
-import universal_viz as uv
 from utils import render_logo_header
 import composite_indicator_methods as cim
 

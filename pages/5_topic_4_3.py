@@ -230,36 +230,36 @@ with tab1:
     st.divider()
 
     # --- Debug Section ---
-    with st.expander("🐞 Debug: Data for Calculated Indicators", expanded=False):
-        st.markdown("**Stock Market Capitalization to GDP**")
-        market_cap_col = 'Market capitalization of listed domestic companies (current US$)'
-        gdp_col = 'GDP (current US$)'
-        st.write("Filtered DataFrame for required indicators:")
-        st.dataframe(df_filtered[df_filtered['indicator_label'].isin([market_cap_col, gdp_col])])
-        st.write("Pivoted DataFrame (before dropping NAs):")
-        df_pivot_stock = df_filtered[df_filtered['indicator_label'].isin([market_cap_col, gdp_col])].pivot_table(
-            index=['country_or_area', 'year'],
-            columns='indicator_label',
-            values='value'
-        )
-        st.dataframe(df_pivot_stock)
-        st.write("Final Calculated DataFrame:")
-        st.dataframe(df_stock_cap)
+    # with st.expander("🐞 Debug: Data for Calculated Indicators", expanded=False):
+    #     st.markdown("**Stock Market Capitalization to GDP**")
+    #     market_cap_col = 'Market capitalization of listed domestic companies (current US$)'
+    #     gdp_col = 'GDP (current US$)'
+    #     st.write("Filtered DataFrame for required indicators:")
+    #     st.dataframe(df_filtered[df_filtered['indicator_label'].isin([market_cap_col, gdp_col])])
+    #     st.write("Pivoted DataFrame (before dropping NAs):")
+    #     df_pivot_stock = df_filtered[df_filtered['indicator_label'].isin([market_cap_col, gdp_col])].pivot_table(
+    #         index=['country_or_area', 'year'],
+    #         columns='indicator_label',
+    #         values='value'
+    #     )
+    #     st.dataframe(df_pivot_stock)
+    #     st.write("Final Calculated DataFrame:")
+    #     st.dataframe(df_stock_cap)
 
-        st.markdown("**Adequacy of International Reserves**")
-        reserves_col = 'International reserves (BoP, current US$)'
-        debt_col = 'External debt stocks, short-term (DOD, current US$)'
-        st.write("Filtered DataFrame for required indicators:")
-        st.dataframe(df_filtered[df_filtered['indicator_label'].isin([reserves_col, debt_col])])
-        st.write("Pivoted DataFrame (before dropping NAs):")
-        df_pivot_reserves = df_filtered[df_filtered['indicator_label'].isin([reserves_col, debt_col])].pivot_table(
-            index=['country_or_area', 'year'],
-            columns='indicator_label',
-            values='value'
-        )
-        st.dataframe(df_pivot_reserves)
-        st.write("Final Calculated DataFrame:")
-        st.dataframe(df_reserves)
+    #     st.markdown("**Adequacy of International Reserves**")
+    #     reserves_col = 'International reserves (BoP, current US$)'
+    #     debt_col = 'External debt stocks, short-term (DOD, current US$)'
+    #     st.write("Filtered DataFrame for required indicators:")
+    #     st.dataframe(df_filtered[df_filtered['indicator_label'].isin([reserves_col, debt_col])])
+    #     st.write("Pivoted DataFrame (before dropping NAs):")
+    #     df_pivot_reserves = df_filtered[df_filtered['indicator_label'].isin([reserves_col, debt_col])].pivot_table(
+    #         index=['country_or_area', 'year'],
+    #         columns='indicator_label',
+    #         values='value'
+    #     )
+    #     st.dataframe(df_pivot_reserves)
+    #     st.write("Final Calculated DataFrame:")
+    #     st.dataframe(df_reserves)
 
 # === Tab 2: Financial Intermediation ===
 with tab2:

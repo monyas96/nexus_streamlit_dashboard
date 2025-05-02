@@ -4,12 +4,13 @@ parent_dir = str(Path(__file__).resolve().parent.parent)
 if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
+import universal_viz as uv
 import streamlit as st
 import pandas as pd
 from utils import render_logo_header
 import composite_indicator_methods as cim
 
-render_logo_header()
+
 # === Top Bar ===
 col1, col2 = st.columns([0.8, 0.1])
 with col1:

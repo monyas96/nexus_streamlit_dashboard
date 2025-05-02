@@ -10,12 +10,7 @@ if parent_dir not in sys.path:
 
 # Import the universal visualization module
 import universal_viz as uv
-# Import logo renderer if it exists in utils
-try:
-    from utils import render_logo_header
-except ImportError:
-    def render_logo_header(): # Dummy function if not found
-        pass
+
 
 # --- Data Loading ---
 # Cache main data loading

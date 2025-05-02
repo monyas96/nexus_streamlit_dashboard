@@ -1,4 +1,3 @@
-
 import streamlit as st
 
 # === Home Content ===
@@ -71,3 +70,7 @@ for i, col in enumerate(cols):
                 </button>
             </div>
             """, unsafe_allow_html=True)
+
+# === Footer ===
+st.markdown("<hr style='margin-top:2em;margin-bottom:1em;'>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center; color: #666; font-size: 1rem;'>This dashboard has been developed by OSAA with financial support from the United Nations Peace and Development Trust Fund.</div>", unsafe_allow_html=True)

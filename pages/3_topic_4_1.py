@@ -59,9 +59,9 @@ df_filtered = uv.filter_dataframe_by_selections(df_main, filters, ref_data)
 # === Title and Home Button ===
 col1, col2 = st.columns([0.8, 0.1])
 with col1:
-    st.title("📊 Topic 4.1: Public Expenditures")
+    st.title("Topic 4.1: Public Expenditures")
 with col2:
-    st.page_link("pages/0_home.py", label="🏠 Back to Home")
+    st.page_link("pages/0_home.py", label="Back to Home")
 
 # === Overview ===
 st.markdown("""
@@ -71,8 +71,8 @@ Effective public expenditure management ensures that resources are not wasted an
 
 # === Tabs Start Immediately After Intro ===
 tab1, tab2 = st.tabs([
-    "📌 4.1.1: Public Expenditure Efficiency",
-    "📌 4.1.2: Expenditure Quality"
+    "4.1.1: Public Expenditure Efficiency",
+    "4.1.2: Expenditure Quality"
 ])
 
 # === Tab 1: 4.1.1 ===

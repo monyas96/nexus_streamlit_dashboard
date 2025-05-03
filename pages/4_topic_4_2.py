@@ -89,9 +89,9 @@ df_filtered = uv.filter_dataframe_by_selections(df_main, filters, ref_data)
 # === Title and Home Button ===
 col1, col2 = st.columns([0.8, 0.1])
 with col1:
-    st.title("📊 Topic 4.2: Budget and Tax Revenues")
+    st.title("Topic 4.2: Budget and Tax Revenues")
 with col2:
-    st.page_link("pages/0_home.py", label="🏠 Back to Home")
+    st.page_link("pages/0_home.py", label="Back to Home")
 
 # === Intro ===
 st.markdown("""
@@ -101,8 +101,8 @@ Budget and tax revenues are crucial for ensuring that governments have the finan
 
 # === Tabs Start Immediately After Intro ===
 tab1, tab2 = st.tabs([
-    "🧾 4.2.1: Tax Revenue Collection",
-    "🧾 4.2.2: Tax Administration Efficiency"
+    "4.2.1: Tax Revenue Collection",
+    "4.2.2: Tax Administration Efficiency"
 ])
 
 # === Tab 1: 4.2.1 ===
@@ -132,7 +132,7 @@ with tab1:
     st.divider()
 
     # --- Chart Section 2 (4.2.1.2 Proxy) ---
-    st.markdown("### 🧾 Indicator 4.2.1.2: Taxpayer Base Expansion")
+    st.markdown("### Indicator 4.2.1.2: Taxpayer Base Expansion")
     st.caption("Proxied by Tax Revenue Composition (% of GDP)")
     tax_composition_indicators = [
         "CIT - % of GDP - Tax Revenue Percent",
@@ -244,7 +244,7 @@ with tab1:
 # === Tab 2: 4.2.2 ===
 with tab2:
     indicator_tab2_eff = "Tax effort (ratio) [tax_eff]"
-    st.markdown("### 📈 Indicator 4.2.2.1: Tax Collection Efficiency Score")
+    st.markdown("### Indicator 4.2.2.1: Tax Collection Efficiency Score")
     st.caption(f"Proxied by: {indicator_tab2_eff}")
     uv.render_indicator_section(
         df=df_filtered,
@@ -268,7 +268,7 @@ with tab2:
             st.markdown("Tax effort is a widely recognized proxy in global evaluations. **Chart above shows Tax effort (ratio) [tax_eff] trend.**")
     st.divider()
     indicator_tab2_buoy = "Tax buoyancy [by_tax]"
-    st.markdown("### 🚫 Indicator 4.2.2.2: Reduction in Tax Evasion")
+    st.markdown("### Indicator 4.2.2.2: Reduction in Tax Evasion")
     st.caption(f"Proxied by: {indicator_tab2_buoy}")
     uv.render_indicator_section(
         df=df_filtered,

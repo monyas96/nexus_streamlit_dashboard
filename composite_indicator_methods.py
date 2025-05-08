@@ -115,3 +115,26 @@ def calculate_adequacy_of_international_reserves(df, country_col='country_or_are
     df_pivot['Adequacy of International Reserves'] = df_pivot[reserves_label] / df_pivot[debt_label]
     result = df_pivot[['Adequacy of International Reserves']].reset_index()
     return result 
+
+def calculate_indicator_with_gap(df, required_labels, calculation_func, country_col='country_or_area', year_col='year'):
+    """
+    Generalized function to calculate an indicator and identify data gaps.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame with columns: country_col, year_col, indicator_label, value
+        required_labels (list): List of required indicator labels
+        calculation_func (function): Function to calculate the indicator from a DataFrame
+        country_col (str): Name of the country column
+        year_col (str): Name of the year column
+
+    Returns:
+        result (pd.DataFrame): DataFrame with calculated indicator
+        missing (pd.DataFrame): DataFrame with missing country-year pairs
+    """
+    df_required = df[df['indicator_label'].isin(required_labels)]
+    df_pivot = df_required.pivot_table(index=[country_col, year_col], columns='indicator_label', values='value')
+    missing_mask = df_pivot.isnull().any(axis=1)
+    missing = df_pivot[missing_mask].reset_index()[[country_col, year_col]]
+    df_pivot = df_pivot.dropna()
+    result = calculation_func(df_pivot)
+    return result, missing 

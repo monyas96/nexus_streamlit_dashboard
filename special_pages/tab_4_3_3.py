@@ -13,7 +13,8 @@ def render_tab_4_3_3(filters, ref_data, country_flags, uv, cim):
 
     # Load CSV data
     df_pension = pd.read_csv('data/Pension_Fund_Asset_Allocation_by_Country.csv')
-    df_pension['Country_Flag'] = df_pension['Country'].map(country_flags) + " " + df_pension['Country']
+    country_col = 'Country or Area' if 'Country or Area' in df_pension.columns else 'Country'
+    df_pension['Country_Flag'] = df_pension[country_col].map(country_flags) + " " + df_pension[country_col]
 
     # Country-by-country analysis in expanders with flags and OSAA style
     for country, flag in country_flags.items():

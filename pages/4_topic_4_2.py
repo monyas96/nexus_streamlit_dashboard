@@ -326,7 +326,7 @@ all_indicators_4_2 = {
     "Tax Effort Ratio (4.2.2.1)": "Tax effort (ratio) [tax_eff]",
     "Tax Buoyancy (4.2.2.2)": "Tax buoyancy [by_tax]"
 }
-africa_countries = ref_data[ref_data['Region'] == 'Africa']['Country'].unique()
+africa_countries = ref_data[ref_data['Region Name'] == 'Africa']['Country or Area'].unique()
 df_africa = df_main[df_main['country_or_area'].isin(africa_countries)]
 st.divider()
 with st.expander("Understand the data gap in Africa for this topic"):

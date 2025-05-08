@@ -14,6 +14,7 @@ from typing import Optional, List, Dict, Union, Any, Callable
 def visualize_indicator(
     df: pd.DataFrame,
     indicator_label: Optional[str] = None,
+    indicator_code: Optional[str] = None,
     calculation_function: Optional[Callable] = None,
     chart_type: str = "bar",
     countries: Optional[List[str]] = None,
@@ -38,6 +39,7 @@ def visualize_indicator(
     Args:
         df: Main dataset
         indicator_label: Label to match from data
+        indicator_code: Optional code to match from data (takes precedence over label if provided)
         calculation_function: Optional function to compute derived indicators
         chart_type: Type of chart ('bar', 'line', 'stacked_bar', 'area', 'point')
         countries: List of ISO3 codes to filter
@@ -79,6 +81,13 @@ def visualize_indicator(
             if "debug" not in st.session_state:
                 st.session_state.debug = {}
             st.session_state.debug["calc_function_rows"] = len(filtered)
+        elif indicator_code:
+            filtered = df[df["indicator_code"] == indicator_code].copy()
+            # Add debug info to session state
+            if "debug" not in st.session_state:
+                st.session_state.debug = {}
+            st.session_state.debug["indicator_code_rows"] = len(filtered)
+            st.session_state.debug["indicator_code"] = indicator_code
         elif indicator_label:
             filtered = df[df["indicator_label"] == indicator_label].copy()
             # Add debug info to session state
@@ -87,7 +96,7 @@ def visualize_indicator(
             st.session_state.debug["indicator_rows"] = len(filtered)
             st.session_state.debug["indicator_name"] = indicator_label
         else:
-            raise ValueError("Either indicator_label or calculation_function must be provided")
+            raise ValueError("Either indicator_label, indicator_code, or calculation_function must be provided")
 
         # Filter by countries if specified
         if countries and len(countries) > 0:
@@ -274,7 +283,9 @@ def create_choropleth_map(
              return go.Figure().update_layout(title_text=f"{title} (Error: Missing Location Column)", height=height, width=width)
 
         ref_data_std = reference_data.copy()
-        ref_data_std['country_std'] = ref_data_std['Country'].apply(standardize_country_name) # Assuming ref has 'Country'
+        # Use the correct country column from reference data
+        country_col = 'Country or Area' if 'Country or Area' in ref_data_std.columns else 'Country'
+        ref_data_std['country_std'] = ref_data_std[country_col].apply(standardize_country_name)
 
         # Create mapping from standardized name to ISO code
         name_to_iso = ref_data_std.set_index('country_std')[iso_column].to_dict()
@@ -466,8 +477,8 @@ def create_line_chart(
 
 def create_bar_chart(
     data,
-    x_column,
-    y_column,
+    x_column=None,
+    y_column=None,
     color_column=None,
     title='Bar Chart',
     x_label=None,
@@ -475,34 +486,25 @@ def create_bar_chart(
     legend_title=None,
     orientation='v', # 'v' for vertical, 'h' for horizontal
     height=400,
-    width=None
+    width=None,
+    **kwargs
 ):
     """
     Creates an interactive bar chart using Plotly Express.
-
-    Args:
-        data (pd.DataFrame): Dataframe containing the data to plot.
-        x_column (str): Column name for the x-axis (or y-axis if horizontal).
-        y_column (str): Column name for the y-axis (or x-axis if horizontal).
-        color_column (str, optional): Column name for coloring bars.
-        title (str): Title of the chart.
-        x_label (str, optional): Label for the x-axis.
-        y_label (str, optional): Label for the y-axis.
-        legend_title (str, optional): Title for the legend.
-        orientation (str): 'v' for vertical, 'h' for horizontal bars.
-        height (int): Height of the chart figure.
-        width (int, optional): Width of the chart figure.
-
-    Returns:
-        plotly.graph_objects.Figure: The generated bar chart figure.
     """
     if data is None or data.empty:
         st.warning("No data provided for bar chart.")
         fig = go.Figure().update_layout(title_text=f"{title} (No Data)", height=height, width=width)
         return fig
 
+    # Try to get x_axis and y_axis from arguments or kwargs
+    x_axis = x_column or kwargs.get('x', None)
+    y_axis = y_column or kwargs.get('y', None)
+    if x_axis is None or y_axis is None:
+        raise ValueError("Both x_axis and y_axis must be provided to create_bar_chart. Got x_axis={} y_axis={}".format(x_axis, y_axis))
+
     # Ensure essential columns exist
-    required_cols = [x_column, y_column]
+    required_cols = [x_axis, y_axis]
     if color_column:
         required_cols.append(color_column)
     missing_cols = [col for col in required_cols if col not in data.columns]
@@ -513,12 +515,7 @@ def create_bar_chart(
 
     # Determine axes based on orientation
     if orientation == 'h':
-        # Assign from function arguments, swapping for horizontal
-        x_axis, y_axis = y_column, x_column
-    else:
-        # Assign from function arguments for vertical
-        x_axis, y_axis = x_column, y_column
-
+        x_axis, y_axis = y_axis, x_axis
     # Convert the value axis to numeric
     value_axis = x_axis if orientation == 'h' else y_axis
     data[value_axis] = pd.to_numeric(data[value_axis], errors='coerce')
@@ -538,8 +535,8 @@ def create_bar_chart(
             title=title,
             orientation=orientation,
             labels={
-                x_column: x_label or x_column.replace('_', ' ').title(),
-                y_column: y_label or y_column.replace('_', ' ').title(),
+                x_axis: x_label or x_axis.replace('_', ' ').title(),
+                y_axis: y_label or y_axis.replace('_', ' ').title(),
                 color_column: legend_title or (color_column.replace('_', ' ').title() if color_column else None)
             },
             text_auto='.2f' # Display values on bars, formatted
@@ -549,12 +546,10 @@ def create_bar_chart(
             height=height,
             width=width,
             legend_title_text=legend_title or (color_column.replace('_', ' ').title() if color_column else ''),
-            xaxis_title=x_label or x_column.replace('_', ' ').title(),
-            yaxis_title=y_label or y_column.replace('_', ' ').title(),
-            # Improve category axis appearance if needed (e.g., for many bars)
-            # xaxis={'categoryorder':'total descending'} # Example: sort bars
+            xaxis_title=x_label or x_axis.replace('_', ' ').title(),
+            yaxis_title=y_label or y_axis.replace('_', ' ').title(),
         )
-        fig.update_traces(textposition='outside') # Position text outside bars
+        fig.update_traces(textposition='outside')
 
         return fig
 
@@ -574,16 +569,15 @@ def create_bar_chart(
 def load_country_reference_data(file_path=None):
     """
     Loads country reference data from a CSV file.
-    Standardizes column names for consistency.
+    Keeps original column names from the CSV file.
 
     Args:
         file_path (str, optional): Path to the CSV file. If None, tries default paths.
 
     Returns:
-        pd.DataFrame: Loaded and potentially standardized reference data. Returns empty DataFrame on error.
+        pd.DataFrame: Loaded reference data. Returns empty DataFrame on error.
     """
     # Define potential default paths relative to this script or a known location
-    # Updated to include the correct filename and paths relative to project root
     default_paths = [
         "data/iso3_country_reference.csv", # Primary expected location
         "../data/iso3_country_reference.csv", # If called from pages/
@@ -605,47 +599,24 @@ def load_country_reference_data(file_path=None):
             if path_obj.is_file():
                 ref_data = pd.read_csv(path_obj)
                 loaded_path = path_obj
-                # st.info(f"Loaded reference data from: {loaded_path}") # Debugging info
                 break # Stop after successful load
-            # else:
-                # st.warning(f"Reference file not found at path: {path_obj}") # Debugging info
         except Exception as e:
             st.error(f"Error loading reference data from {p}: {e}")
-            # Don't return immediately, try other paths
             continue
 
     if ref_data is None:
         st.error(f"Could not find or load country reference data. Tried paths: {[str(p) for p in paths_to_try]}")
         return pd.DataFrame()
 
-    # Standardize column names (adjust based on actual CSV columns in iso3_country_reference.csv)
-    # Check the actual columns first, as the file might vary
-    # Example: rename common variations to consistent names
-    rename_map = {
-        # Potential columns in iso3_country_reference.csv (adjust as needed)
-        'country_name': 'Country', # Assuming 'country_name' exists
-        'Country or Area': 'Country', # Alternative common name
-        'iso3': 'iso3', # Should already be correct
-        'ISO-alpha3 code': 'iso3', # Alternative name
-        'region_name': 'Region', # Assuming 'region_name' exists
-        'Region Name': 'Region' # Alternative common name
-        # Add other columns like Latitude, Longitude if needed for coordinates
-    }
-    # Only rename columns that exist in the DataFrame
-    existing_rename_map = {k: v for k, v in rename_map.items() if k in ref_data.columns}
-    if existing_rename_map:
-        ref_data = ref_data.rename(columns=existing_rename_map)
-
-    # Ensure essential columns exist after rename
-    required_ref_cols = ['Country', 'iso3', 'Region']
+    # Ensure essential columns exist
+    required_ref_cols = ['Region Name', 'Country or Area', 'iso3']
     missing_cols = [col for col in required_ref_cols if col not in ref_data.columns]
     if missing_cols:
-         st.warning(f"Reference data loaded from {loaded_path} is missing expected columns after renaming: {missing_cols}. Expected: {required_ref_cols}. Found: {list(ref_data.columns)}")
-         # Depending on usage, might need to handle this more strictly
+         st.warning(f"Reference data loaded from {loaded_path} is missing expected columns: {missing_cols}. Expected: {required_ref_cols}. Found: {list(ref_data.columns)}")
 
     # Optional: Fill missing regions if necessary
-    if 'Region' in ref_data.columns:
-        ref_data['Region'] = ref_data['Region'].fillna('Unknown')
+    if 'Region Name' in ref_data.columns:
+        ref_data['Region Name'] = ref_data['Region Name'].fillna('Unknown')
 
     return ref_data
 
@@ -661,7 +632,7 @@ def filter_dataframe_by_selections(df, filters, ref_data):
                         (selected_region, selected_countries, year_range).
                         'selected_countries' can contain country names and/or
                         regional aggregate labels (e.g., "Africa (Region Average)").
-        ref_data (pd.DataFrame): Country reference data with 'Region' and 'Country'.
+        ref_data (pd.DataFrame): Country reference data with 'Region Name' and 'Country or Area'.
 
     Returns:
         pd.DataFrame: The filtered (and potentially aggregated) dataframe.
@@ -669,9 +640,9 @@ def filter_dataframe_by_selections(df, filters, ref_data):
     if df is None or df.empty:
         return pd.DataFrame()
 
-    # Ensure ref_data has the necessary columns ('Region', 'Country')
-    if ref_data is None or ref_data.empty or 'Region' not in ref_data.columns or 'Country' not in ref_data.columns:
-         st.warning("Reference data is missing or incomplete ('Region', 'Country' columns). Skipping regional filtering/aggregation.")
+    # Ensure ref_data has the necessary columns ('Region Name', 'Country or Area')
+    if ref_data is None or ref_data.empty or 'Region Name' not in ref_data.columns or 'Country or Area' not in ref_data.columns:
+         st.warning("Reference data is missing or incomplete ('Region Name', 'Country or Area' columns). Skipping regional filtering/aggregation.")
          # Fallback to just year filtering if ref_data is bad
          filtered_df = df.copy()
          start_year, end_year = filters.get('year_range', (df['year'].min(), df['year'].max()))
@@ -711,7 +682,7 @@ def filter_dataframe_by_selections(df, filters, ref_data):
             return df_processed
         else:
             # If a specific region was selected, filter df_processed by that region
-            countries_in_region = ref_data[ref_data['Region'] == selected_region]['Country'].unique().tolist()
+            countries_in_region = ref_data[ref_data['Region Name'] == selected_region]['Country or Area'].unique().tolist()
             country_col_in_df = 'country_or_area' if 'country_or_area' in df_processed.columns else 'Country'
             if country_col_in_df in df_processed.columns and countries_in_region:
                 return df_processed[df_processed[country_col_in_df].isin(countries_in_region)].copy()
@@ -740,7 +711,7 @@ def filter_dataframe_by_selections(df, filters, ref_data):
         country_col_in_df = 'country_or_area' if 'country_or_area' in df_processed.columns else 'Country'
         for region_label in region_aggregate_labels:
             region_name = region_label.replace(" (Region Average)", "")
-            countries_in_region = ref_data[ref_data['Region'] == region_name]['Country'].unique().tolist()
+            countries_in_region = ref_data[ref_data['Region Name'] == region_name]['Country or Area'].unique().tolist()
             region_df = df_processed[df_processed[country_col_in_df].isin(countries_in_region)]
             if not region_df.empty and required_value_col in region_df.columns:
                 # Group by year, indicator, and calculate mean
@@ -1331,12 +1302,12 @@ def setup_page_config(title="Nexus Dashboard", icon="📊", layout="wide"):
 
 def setup_sidebar_filters(ref_data, df=None, key_prefix=""):
     """
-    Sets up sidebar filters for region, country (including regional aggregates), and year range.
+    Sets up sidebar filters for region, country, and year range selection.
 
     Args:
-        ref_data (pd.DataFrame): Country reference data with 'Region' and 'Country'.
-        df (pd.DataFrame, optional): Main dataframe, used to determine default year range.
-        key_prefix (str): Prefix for widget keys to ensure uniqueness across pages.
+        ref_data (pd.DataFrame): Reference data containing region and country information.
+        df (pd.DataFrame, optional): Main data for year range determination.
+        key_prefix (str): Prefix for widget keys to avoid conflicts.
 
     Returns:
         dict: Dictionary containing filter selections:
@@ -1346,7 +1317,7 @@ def setup_sidebar_filters(ref_data, df=None, key_prefix=""):
     st.sidebar.header("Filters")
 
     # --- Region Selection ---
-    regions = sorted(ref_data['Region'].dropna().unique())
+    regions = sorted(ref_data['Region Name'].dropna().unique())
     selected_region = st.sidebar.selectbox(
         "Select Region",
         regions,
@@ -1355,7 +1326,7 @@ def setup_sidebar_filters(ref_data, df=None, key_prefix=""):
 
     # --- Country Selection (with Regional Aggregate) ---
     # Get all countries in the selected region
-    countries_in_region = sorted(ref_data[ref_data['Region'] == selected_region]['Country'].dropna().unique())
+    countries_in_region = sorted(ref_data[ref_data['Region Name'] == selected_region]['Country or Area'].dropna().unique())
     # Add region average if it exists in the data
     region_average_label = f"{selected_region} (Region Average)"
     region_countries_with_avg = countries_in_region.copy()

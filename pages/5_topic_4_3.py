@@ -61,7 +61,16 @@ tab1, tab2, tab3 = st.tabs([
 with tab1:
     st.markdown("The following are the indicators for this subtopic.")
     # 4.3.1.1 Stock Market Capitalization to GDP (calculated)
-    df_stock_cap = cim.calculate_stock_market_cap_to_gdp(df_filtered)
+    required_labels_stock_cap = [
+        'Market capitalization of listed domestic companies (current US$)',
+        'GDP (current US$)'
+    ]
+    calculation_func_stock_cap = lambda df: pd.DataFrame({
+        'Stock Market Cap to GDP (%)': (df['Market capitalization of listed domestic companies (current US$)'] / df['GDP (current US$)']) * 100
+    }).reset_index()
+    df_stock_cap, missing_stock_cap = cim.calculate_indicator_with_gap(
+        df_filtered, required_labels_stock_cap, calculation_func_stock_cap
+    )
     df_stock_cap['indicator_label'] = 'Stock Market Cap to GDP (%)'
     uv.render_indicator_section(
         df=df_stock_cap.rename(columns={
@@ -117,7 +126,16 @@ with tab1:
     st.divider()
 
     # 4.3.1.3 Adequacy of International Reserves (calculated)
-    df_reserves = cim.calculate_adequacy_of_international_reserves(df_filtered)
+    required_labels_reserves = [
+        'Reserves and related items (BoP, current US$)',
+        'External debt stocks, short-term (DOD, current US$)'
+    ]
+    calculation_func_reserves = lambda df: pd.DataFrame({
+        'Adequacy of International Reserves': df['Reserves and related items (BoP, current US$)'] / df['External debt stocks, short-term (DOD, current US$)']
+    }).reset_index()
+    df_reserves, missing_reserves = cim.calculate_indicator_with_gap(
+        df_filtered, required_labels_reserves, calculation_func_reserves
+    )
     df_reserves['indicator_label'] = 'Adequacy of International Reserves'
     uv.render_indicator_section(
         df=df_reserves.rename(columns={
@@ -193,31 +211,6 @@ with tab1:
 
     df_map = map_indicators_4_3_1[selected_map_indicator]
 
-    # Remove the year selector for the map (the map will use the year range from the sidebar filter)
-    # available_years = []
-    # if 'year' in df_map.columns:
-    #     available_years = sorted(df_map['year'].dropna().unique())
-    # selected_year = None
-    # if available_years:
-    #     selected_year = st.selectbox(
-    #         "Select year for map:",
-    #         options=available_years,
-    #         index=len(available_years)-1,  # Default to latest year
-    #         key=f"topic4_3_tab1_map_year_{selected_map_indicator}"
-    #     )
-    #     df_map = df_map[df_map['year'] == selected_year]
-
-    with st.expander("🐞 Debug: Map Data", expanded=False):
-        st.write("Selected indicator for map:", selected_map_indicator)
-        st.write("df_map shape:", df_map.shape)
-        st.dataframe(df_map.head())
-        st.write("Unique indicator_label values in df_map:")
-        st.write(df_map['indicator_label'].unique())
-        if 'country_or_area' in df_map.columns:
-            st.write("Sample country_or_area values:", df_map['country_or_area'].dropna().unique()[:10])
-        else:
-            st.write("country_or_area column is missing in df_map!")
-
     indicator_label_map = {
         "Stock Market Cap to GDP (%)": "Stock Market Cap to GDP (%)",
         "Bond Market Development": "Portfolio investment, bonds (PPG + PNG) (NFL, current US$)",
@@ -239,69 +232,30 @@ with tab1:
         st.info(f"No data available for {selected_map_indicator} to display on the map.")
     st.divider()
 
-    # === Debug Section (commented out) ===
-    # with st.expander("🐞 Debug: Data for Calculated Indicators", expanded=False):
-    #     st.markdown("**Stock Market Capitalization to GDP**")
-    #     market_cap_col = 'Market capitalization of listed domestic companies (current US$)'
-    #     gdp_col = 'GDP (current US$)'
-    #     st.write("Filtered DataFrame for required indicators:")
-    #     st.dataframe(df_filtered[df_filtered['indicator_label'].isin([market_cap_col, gdp_col])])
-    #     st.write("Pivoted DataFrame (before dropping NAs):")
-    #     df_pivot_stock = df_filtered[df_filtered['indicator_label'].isin([market_cap_col, gdp_col])].pivot_table(
-    #         index=['country_or_area', 'year'],
-    #         columns='indicator_label',
-    #         values='value'
-    #     )
-    #     st.dataframe(df_pivot_stock)
-    #     st.write("Final Calculated DataFrame:")
-    #     st.dataframe(df_stock_cap)
-    #
-    #     st.markdown("**Adequacy of International Reserves**")
-    #     reserves_col = 'International reserves (BoP, current US$)'
-    #     debt_col = 'External debt stocks, short-term (DOD, current US$)'
-    #     st.write("Filtered DataFrame for required indicators:")
-    #     st.dataframe(df_filtered[df_filtered['indicator_label'].isin([reserves_col, debt_col])])
-    #     st.write("Pivoted DataFrame (before dropping NAs):")
-    #     df_pivot_reserves = df_filtered[df_filtered['indicator_label'].isin([reserves_col, debt_col])].pivot_table(
-    #         index=['country_or_area', 'year'],
-    #         columns='indicator_label',
-    #         values='value'
-    #     )
-    #     st.dataframe(df_pivot_reserves)
-    #     st.write("Final Calculated DataFrame:")
-    #     st.dataframe(df_reserves)
-
 # === Tab 2: Financial Intermediation ===
 with tab2:
     st.markdown("The following are the indicators for this subtopic.")
     # 4.3.2.1: Banking Sector Development Index (calculated)
-    df_banking_index = cim.calculate_banking_sector_development_index(df_filtered)
-    df_banking_index['indicator_label'] = 'Banking Sector Development Index'
-    uv.render_indicator_section(
-        df=df_banking_index.rename(columns={
-            'Banking Sector Development Index': 'value',
-            'country_or_area': 'country_or_area',
-            'year': 'year'
-        }),
-        indicator_label='Banking Sector Development Index',
-        title="Indicator 4.3.2.1: Banking Sector Development Index",
-        description="Measurement of the development and efficiency of the banking sector. Composite index based on capital, liquidity, and credit provision.",
-        chart_type="line",
-        selected_countries=filters.get('selected_countries'),
-        year_range=filters.get('year_range'),
-        chart_options={'x': 'year', 'y': 'value', 'color': 'country_or_area'},
-        show_data_table=True,
-        container_key="topic4_3_tab2_banking_index_chart"
-    )
-    with st.expander("🔍 Learn more about Indicator 4.3.2.1"):
-        t1_1, t1_2, t1_3 = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
-        with t1_1:
-            st.markdown("Composite index capturing depth, access, and efficiency of banking systems.")
-        with t1_2:
-            st.markdown("- **Efficiency**: Credit allocation.  \n- **Effectiveness**: Inclusive growth and financial stability.")
-        with t1_3:
-            st.markdown("Calculated indicator. See methodology in documentation.")
-    st.divider()
+    try:
+        required_labels_banking = [
+            'Bank capital to assets ratio (%)',
+            'Bank liquid reserves to bank assets ratio (%)',
+            'Domestic credit provided by financial sector (% of GDP)'
+        ]
+        calculation_func_banking = lambda df: pd.DataFrame({
+            'Banking Sector Development Index': (
+                df['Bank capital to assets ratio (%)'] * 0.4 +
+                df['Bank liquid reserves to bank assets ratio (%)'] * 0.3 +
+                df['Domestic credit provided by financial sector (% of GDP)'] * 0.3
+            )
+        }).reset_index()
+        df_banking_gap, missing_banking = cim.calculate_indicator_with_gap(
+            df_main, required_labels_banking, calculation_func_banking
+        )
+        df_banking_gap['indicator_label'] = 'Banking Sector Development Index'
+        df_banking_gap = standardize_gap_df(df_banking_gap, ref_data)
+    except Exception:
+        df_banking_gap = pd.DataFrame()
 
     # 4.3.2.2: Domestic Credit to GDP (direct)
     uv.render_indicator_section(
@@ -329,8 +283,8 @@ with tab2:
     # Geographical Distribution Map Section
     st.markdown("#### Geographical Distribution of Financial Intermediation Indicators")
     df_domcredit_map = df_filtered[df_filtered['indicator_label'] == "Domestic credit provided by financial sector (% of GDP)"]
-    if 'Banking Sector Development Index' in df_banking_index.columns:
-        df_banking_index_map = df_banking_index.rename(columns={'Banking Sector Development Index': 'value'})
+    if 'Banking Sector Development Index' in df_banking_gap.columns:
+        df_banking_index_map = df_banking_gap.rename(columns={'Banking Sector Development Index': 'value'})
         df_banking_index_map['indicator_label'] = 'Banking Sector Development Index'
     else:
         df_banking_index_map = pd.DataFrame()
@@ -392,40 +346,68 @@ def standardize_gap_df(df, ref_data):
             df.rename(columns={df.columns[-1]: 'value'}, inplace=True)
     return df
 
+# Debug: Inspect df_filtered for required indicators
+# st.write('Unique indicator_label values in df_filtered:', df_filtered['indicator_label'].unique())
+# st.write('Sample rows for Market Cap in df_filtered:', df_filtered[df_filtered['indicator_label'] == 'Market capitalization of listed domestic companies (current US$)'].head())
+# st.write('Sample rows for GDP in df_filtered:', df_filtered[df_filtered['indicator_label'] == 'GDP (current US$)'].head())
+
+# Ensure all calculated DataFrames are defined before the data gap section
 try:
-    df_stock_cap_gap = cim.calculate_stock_market_cap_to_gdp(df_main)
+    df_stock_cap_gap = cim.calculate_stock_market_cap_to_gdp(df_filtered)
     df_stock_cap_gap['indicator_label'] = 'Stock Market Cap to GDP (%)'
-    df_stock_cap_gap = standardize_gap_df(df_stock_cap_gap, ref_data)
-except Exception:
+except Exception as e:
     df_stock_cap_gap = pd.DataFrame()
 
 try:
-    df_reserves_gap = cim.calculate_adequacy_of_international_reserves(df_main)
+    df_reserves_gap = cim.calculate_adequacy_of_international_reserves(df_filtered)
     df_reserves_gap['indicator_label'] = 'Adequacy of International Reserves'
-    df_reserves_gap = standardize_gap_df(df_reserves_gap, ref_data)
-except Exception:
+except Exception as e:
     df_reserves_gap = pd.DataFrame()
 
 try:
-    df_bond_gap = df_main[df_main['indicator_label'] == "Portfolio investment, bonds (PPG + PNG) (NFL, current US$)"].copy()
-    df_bond_gap = standardize_gap_df(df_bond_gap, ref_data)
-except Exception:
+    df_bond_gap = df_filtered[df_filtered['indicator_label'] == "Portfolio investment, bonds (PPG + PNG) (NFL, current US$)"].copy()
+except Exception as e:
     df_bond_gap = pd.DataFrame()
 
-# Combine all for the data gap heatmap
 try:
-    df_gap = pd.concat([df_main, df_stock_cap_gap, df_reserves_gap, df_bond_gap], ignore_index=True)
-except Exception:
-    df_gap = df_main.copy()
+    # If you have a calculated banking gap, use your calculation here
+    df_banking_gap = pd.DataFrame()  # Placeholder, replace with actual calculation if needed
+except Exception as e:
+    df_banking_gap = pd.DataFrame()
 
-africa_countries = ref_data[ref_data['Region'] == 'Africa']['Country'].unique()
-df_africa = df_gap[df_gap['country_or_area'].isin(africa_countries) if 'country_or_area' in df_gap.columns else df_gap['Country'].isin(africa_countries)]
+# Combine only calculated DataFrames for the data gap heatmap
+try:
+    df_gap = pd.concat([df_stock_cap_gap, df_reserves_gap, df_bond_gap, df_banking_gap], ignore_index=True)
+except Exception:
+    df_gap = pd.DataFrame()
+
+# Debug: Check if df_gap is empty and what columns it has
+# st.write("df_gap shape:", df_gap.shape)
+# st.write("df_gap columns:", df_gap.columns)
+# st.write("df_gap head:", df_gap.head())
+
+# Debug: Check each DataFrame before concatenation
+# st.write("df_stock_cap_gap shape/columns:", df_stock_cap_gap.shape, df_stock_cap_gap.columns)
+# st.write("df_reserves_gap shape/columns:", df_reserves_gap.shape, df_reserves_gap.columns)
+# st.write("df_bond_gap shape/columns:", df_bond_gap.shape, df_bond_gap.columns)
+# st.write("df_banking_gap shape/columns:", df_banking_gap.shape, df_banking_gap.columns)
+
+# Only print unique indicator_label values if the column exists
+# if 'indicator_label' in df_gap.columns:
+#     st.write('Unique indicator_label values in df_gap:', df_gap['indicator_label'].unique())
+# else:
+#     st.write('No indicator_label column in df_gap. Columns are:', df_gap.columns)
+
+# Filter for African countries
+africa_countries = ref_data[ref_data['Region Name'] == 'Africa']['Country or Area'].unique()
+df_africa = df_gap[df_gap['country_or_area'].isin(africa_countries)]
+
 st.divider()
 with st.expander("Understand the data gap in Africa for this topic"):
     selected_gap_indicator = st.selectbox(
         "Select indicator to view data availability:",
         options=list(all_indicators_4_3.keys()),
-        key="topic4_3_gap_indicator_select"
+        key="topic4_3_gap_indicator_select_data_gap"
     )
     uv.render_data_availability_heatmap(
         df=df_africa,
@@ -434,3 +416,4 @@ with st.expander("Understand the data gap in Africa for this topic"):
         container_key="topic4_3_gap",
         all_countries=africa_countries
     )
+

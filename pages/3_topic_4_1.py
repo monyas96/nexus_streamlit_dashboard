@@ -160,7 +160,7 @@ all_indicators_4_1 = {
     "Aggregate Expenditure Outturn (4.1.1)": "PEFA: PI-1 Aggregate expenditure out-turn",
     "Expenditure Composition Outturn (4.1.2)": "PEFA: PI-2 Expenditure composition outturn"
 }
-africa_countries = ref_data[ref_data['Region'] == 'Africa']['Country'].unique()
+africa_countries = ref_data[ref_data['Region Name'] == 'Africa']['Country or Area'].unique()
 df_africa = df_main[df_main['country_or_area'].isin(africa_countries)]
 st.divider()
 with st.expander("Understand the data gap in Africa for this topic"):

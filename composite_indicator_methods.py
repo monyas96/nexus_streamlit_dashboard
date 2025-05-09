@@ -138,3 +138,27 @@ def calculate_indicator_with_gap(df, required_labels, calculation_func, country_
     df_pivot = df_pivot.dropna()
     result = calculation_func(df_pivot)
     return result, missing 
+
+def calculate_corruption_losses(df):
+    """
+    Calculate each country's share of the $148B annual corruption losses using WGI Control of Corruption scores.
+
+    Steps:
+    1. Normalize scores to [0, 1]: normalized_score = (score + 2.5) / 5.0
+    2. Invert: inverted_score = 1 - normalized_score
+    3. Assign weights = inverted_score
+    4. Allocate $148B: corruption_loss_billion_usd = (weight / total_weight) * 148
+
+    Returns a DataFrame with columns:
+    ['country_or_area', 'year', 'value', 'normalized_score', 'inverted_score', 'corruption_loss_billion_usd']
+    """
+    idx = df.groupby('country_or_area')['year'].transform('max') == df['year']
+    latest = df[idx].copy()
+    latest['normalized_score'] = (latest['value'] + 2.5) / 5.0
+    latest['normalized_score'] = latest['normalized_score'].clip(0, 1)
+    latest['inverted_score'] = 1 - latest['normalized_score']
+    latest['weight'] = latest['inverted_score']
+    total_weight = latest['weight'].sum()
+    latest['corruption_loss_billion_usd'] = (latest['weight'] / total_weight) * 148
+    latest['corruption_loss_billion_usd'] = latest['corruption_loss_billion_usd'].round(2)
+    return latest 

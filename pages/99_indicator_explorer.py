@@ -54,6 +54,7 @@ st.markdown("Select an indicator label directly from the dataset and explore its
 # st.warning(f"Ensure your mapping file (...)")
 
 df_main = load_main_data(MAIN_DATA_FILE)
+st.write("All indicator labels in nexus.parquet:", df_main['indicator_label'].unique())
 ref_data = uv.load_country_reference_data() # For filters
 
 # Stop if essential data is missing

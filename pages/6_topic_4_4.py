@@ -4,6 +4,7 @@ from universal_viz import visualize_indicator, load_main_data, load_country_refe
 import plotly.graph_objs as go
 import altair as alt
 from composite_indicator_methods import calculate_corruption_losses
+from special_pages.tab_4_4_4 import render_financial_secrecy_tab
 
 # Load data
 df = load_main_data("data/nexus.parquet")
@@ -22,97 +23,105 @@ This section analyzes illicit financial flows (IFFs) in Africa, including their 
 """)
 
 # Create tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "4.4.1: Magnitude of IFFs",
     "4.4.2: Types of IFFs",
     "4.4.3: Detection and Enforcement",
+    "4.4.4: Financial Secrecy",
     "4.4.5: Impact on Development Finance",
     "4.4.6: Policy and Regulatory Environment"
 ])
 
 # === Tab 1: Magnitude of IFFs ===
 with tab1:
-    # Indicator 4.4.1.1: IFFs as % of GDP
-    with st.container():
-        st.markdown("### Indicator 4.4.1.1: IFFs as % of GDP")
-        st.caption("Proxied by Global Financial Integrity")
-        
-        try:
-            # Filter for the specific indicator
-            iffs_data = filtered_data[filtered_data['indicator_label'] == 'IFFs as % of GDP']
-            
-            if not iffs_data.empty:
-                chart = visualize_indicator(
-                    df=iffs_data,
-                    selected_countries=filters["selected_countries"],
-                    year_range=filters["year_range"],
-                    chart_type="line",
-                    title="IFFs as % of GDP Over Time",
-                    y_title="Percentage of GDP"
-                )
-                st.plotly_chart(chart, use_container_width=True)
-                
-                # Calculate and display metrics
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Average %", f"{iffs_data['value'].mean():.1f}%")
-                with col2:
-                    st.metric("Maximum %", f"{iffs_data['value'].max():.1f}%")
-                with col3:
-                    st.metric("Minimum %", f"{iffs_data['value'].min():.1f}%")
-            else:
-                st.info("No data available for IFFs as % of GDP")
-        except Exception as e:
-            st.error(f"Error creating visualization: {str(e)}")
-        
-        with st.expander("Learn more"):
-            st.markdown("""
-**Definition:** Illicit financial flows as a percentage of GDP.  
-**Proxy:** Global Financial Integrity estimates.
+    st.header("4.4.1: Magnitude of IFFs")
+    subindicators_441 = {
+        "4.4.1.1: IFFs as % of GDP": {
+            "indicator_label": "IFFs as % of GDP",
+            "chart_type": "line",
+            "y_title": "Percentage of GDP",
+            "learn_more": lambda: st.markdown(r'''
+**Definition:**
+Illicit financial flows (IFFs) are cross-border movements of money that are illegal in origin, transfer, or use. This includes tax evasion, trade mispricing, corruption, and proceeds from criminal activity. Measuring IFFs as a percentage of GDP helps contextualize their relative economic burden on countries.
 
-This indicator shows the relative scale of IFFs compared to the size of the economy.
-            """)
+**Africa-wide Estimates:**
+- Africa loses an estimated **3.7% of its GDP annually** to IFFs, based on mid-2010s data. Over the period 2000–2015, the average was around **2.6% of GDP**, suggesting the scale of the problem has grown. This ratio is among the highest globally, indicating that IFFs are a major systemic drain on Africa's economies.
 
-    # Indicator 4.4.1.2: Annual IFF Volume
-    with st.container():
-        st.markdown("### Indicator 4.4.1.2: Annual IFF Volume")
-        st.caption("Proxied by Global Financial Integrity")
-        
-        try:
-            # Filter for the specific indicator
-            volume_data = filtered_data[filtered_data['indicator_label'] == 'Annual IFF Volume (USD)']
-            
-            if not volume_data.empty:
-                chart = visualize_indicator(
-                    df=volume_data,
-                    selected_countries=filters["selected_countries"],
-                    year_range=filters["year_range"],
-                    chart_type="bar",
-                    title="Annual IFF Volume by Country",
-                    y_title="Volume (USD)"
-                )
-                st.plotly_chart(chart, use_container_width=True)
-                
-                # Calculate and display metrics
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Total Volume", f"${volume_data['value'].sum():,.0f}")
-                with col2:
-                    st.metric("Maximum Volume", f"${volume_data['value'].max():,.0f}")
-                with col3:
-                    st.metric("Minimum Volume", f"${volume_data['value'].min():,.0f}")
-            else:
-                st.info("No data available for Annual IFF Volume")
-        except Exception as e:
-            st.error(f"Error creating visualization: {str(e)}")
-        
-        with st.expander("Learn more"):
-            st.markdown("""
-**Definition:** Total value of illicit financial flows in USD.  
-**Proxy:** Global Financial Integrity estimates.
+**Regional Variations:**
+- **West Africa:** Median IFFs reach **10.3% of GDP**, the highest in the continent.
+- **North Africa:** Experiences the lowest relative levels, at around **2.7% of GDP**.
+These differences often reflect sectoral exposure (e.g. extractives), institutional quality, and tax base structure.
 
-This indicator shows the absolute scale of IFFs in monetary terms.
-            """)
+**Policy Relevance:**
+IFFs of this magnitude reduce fiscal space, increase debt dependence, and compromise SDG financing. Reducing IFFs could recapture significant domestic resources for investment in health, education, and infrastructure.
+
+<details>
+<summary>📌 <b>Sources & Footnotes</b></summary>
+<ul>
+<li>UNCTAD (2020). Economic Development in Africa Report: Tackling Illicit Financial Flows for Sustainable Development in Africa, p. 3.</li>
+<li>Ibid., p. 24, 28–29, 52.</li>
+</ul>
+</details>
+            ''', unsafe_allow_html=True)
+        },
+        "4.4.1.2: Annual IFF Volume": {
+            "indicator_label": "Annual IFF Volume (USD)",
+            "chart_type": "bar",
+            "y_title": "Volume (USD)",
+            "learn_more": lambda: st.markdown(r'''
+**Estimate:**
+UNCTAD estimates that Africa loses approximately **USD 88.6 billion each year** through illicit financial flows. This far exceeds the annual aid inflows (~USD 48 billion) and foreign direct investment (~USD 54 billion) received by the continent.
+
+**Country-Level Figures (2013–2015):**
+- **Nigeria:** USD 41 billion
+- **Egypt:** USD 17.5 billion
+- **South Africa:** USD 14.1 billion
+
+**Cumulative Losses:**
+From 2000–2015, cumulative IFFs from Africa amounted to about **USD 836 billion**.
+
+**Main Channels of IFFs:**
+- **Commercial Tax Practices** (e.g. trade mispricing, profit shifting): ~65% of total IFFs
+- **Corruption-related flows:** Bribery, embezzlement, and public sector theft
+- **Illicit Markets and Smuggling:** Drugs, arms, wildlife, etc.
+- **Terrorist Financing and Criminal Proceeds**
+
+**Sector Spotlight – Extractives:**
+In 2015, under-invoicing of African extractive exports accounted for **USD 40 billion in losses** — with gold alone representing 77% of the total mispriced value.
+
+**Policy Implications:**
+IFFs deprive Africa of the financial means to achieve sustainable development. Combatting IFFs would directly support SDG 16.4 and unlock billions in domestic resources. Targeted policies in financial transparency, tax reform, anti-money laundering, and global asset recovery are critical.
+
+<details>
+<summary>📌 <b>Sources & Footnotes</b></summary>
+<ul>
+<li>UNCTAD (2020). Economic Development in Africa Report: Tackling Illicit Financial Flows for Sustainable Development in Africa, p. 3, 24, 25, 28–29, 35, 40, 44, 52.</li>
+</ul>
+</details>
+            ''', unsafe_allow_html=True)
+        }
+    }
+    selected_441 = st.selectbox("Select sub-indicator:", list(subindicators_441.keys()), key="441_subindicator")
+    indicator_label = subindicators_441[selected_441]["indicator_label"]
+    chart_type = subindicators_441[selected_441]["chart_type"]
+    y_title = subindicators_441[selected_441]["y_title"]
+    data = filtered_data[filtered_data['indicator_label'] == indicator_label]
+    if not data.empty:
+        visualize_indicator(
+            df=data,
+            indicator_label=indicator_label,
+            chart_type=chart_type,
+            title=selected_441,
+            y_title=y_title,
+            x_title="Year" if chart_type == "line" else "Country",
+            color_by="country_or_area"
+        )
+        with st.expander(f"View Data Table: {selected_441}"):
+            st.dataframe(data[['country_or_area', 'year', 'value']].sort_values(['country_or_area', 'year']))
+    else:
+        st.info(f"No data available for {selected_441}")
+    with st.expander(f"Learn more about {selected_441}"):
+        subindicators_441[selected_441]["learn_more"]()
 
 # === Tab 2: Types of IFFs ===
 with tab2:
@@ -275,12 +284,6 @@ Proxy justification: IMF tax registration data provides a standardized approach 
                 x_title="Year",
                 color_by="country_or_area"
             )
-            if chart is not None and isinstance(chart, go.Figure):
-                pass  # Removed duplicate chart rendering
-            elif chart is not None and isinstance(chart, alt.Chart):
-                pass  # Removed duplicate chart rendering
-            else:
-                st.warning("No chart could be generated for this indicator.")
         else:
             st.info("No data available for Criminal Activities")
         
@@ -482,8 +485,141 @@ The World Justice Project, World Bank, and Mo Ibrahim Index provide validated, c
 Transparency and identity documentation are essential enablers for tracking and prosecuting illicit financial flows.  
         """)
 
-# === Tab 4: Impact on Development Finance ===
+    # 4.4.3.2: Capacity of Tax and Customs Authorities
+    st.subheader("4.4.3.2: Capacity of Tax and Customs Authorities")
+
+    # 4.4.3.2.a Operating Metrics Audit
+    st.markdown("#### 4.4.3.2.a: Operating Metrics Audit")
+    operational_indicators = {
+        "Number of criminal investigations": "Role of the administration in tax crime investigations - Conducting investigations, under direction of other agency",
+        "Number of tax dispute resolutions": "FTEs by function of the tax administration-Audit, investigation and other verification",
+        "Number of audits / tax crime investigations": "FTEs by function of the tax administration-Audit, investigation and other verification"
+    }
+    selected_ops = st.selectbox(
+        "Select Operational Capacity Indicator:",
+        options=list(operational_indicators.keys()),
+        key="ops_capacity_selectbox"
+    )
+    display_name = selected_ops
+    label = operational_indicators[display_name]
+    data = filtered_data[filtered_data['indicator_label'] == label]
+    if not data.empty:
+        visualize_indicator(
+            df=data,
+            indicator_label=label,
+            chart_type="bar",
+            title=display_name,
+            y_title="Value",
+            x_title="Year",
+            color_by="country_or_area"
+        )
+        with st.expander(f"View Data Table: {display_name}"):
+            st.dataframe(data)
+    else:
+        st.info(f"No data available for {display_name}.")
+
+    # 4.4.3.2.b Financial & ICT Resources
+    st.markdown("#### 4.4.3.2.b: Resources and ICT Infrastructure")
+    financial_indicators = {
+        "Value of additional assessments raised from audits and verification actions by tax type (including penalties and interest) (in thousands in local currency)-Corporate income tax": "Value of additional assessments raised from audits and verification actions by tax type (including penalties and interest) (in thousands in local currency)-Corporate income tax",
+        "Salary expenditure - Derived": "Salary expenditure - Derived",
+        "Operating expenditure - Derived": "Operating expenditure - Derived",
+        "Operational ICT solutions of the administration are…-Custom built": "Operational ICT solutions of the administration are…-Custom built",
+        "Operational ICT solutions of the administration are…-On premises commercial off the shelf (COTS)": "Operational ICT solutions of the administration are…-On premises commercial off the shelf (COTS)",
+        "Operational ICT solutions of the administration are…-Software-as-a-Service (SaaS, i.e. cloud based)": "Operational ICT solutions of the administration are…-Software-as-a-Service (SaaS, i.e. cloud based)",
+        "Total tax administration FTEs - Derived": "Total tax administration FTEs - Derived"
+    }
+    selected_fin = st.selectbox(
+        "Select Financial & ICT Resource Indicator:",
+        options=list(financial_indicators.keys()),
+        key="fin_capacity_selectbox"
+    )
+    display_name = selected_fin
+    label = financial_indicators[display_name]
+    data = filtered_data[filtered_data['indicator_label'] == label]
+    if not data.empty:
+        visualize_indicator(
+            df=data,
+            indicator_label=label,
+            chart_type="bar",
+            title=display_name,
+            y_title="Value",
+            x_title="Year",
+            color_by="country_or_area"
+        )
+        with st.expander(f"View Data Table: {display_name}"):
+            st.dataframe(data)
+    else:
+        st.info(f"No data available for {display_name}.")
+
+    # 4.4.3.2.c Human Capital Strength
+    st.markdown("#### 4.4.3.2.c: Human Capital Strength")
+    human_capital_indicators = {
+        "Staff Strength - Departures in FY": "Staff strength levels -Departures in FY",
+        "Staff Strength - No. at end of FY": "Staff strength levels -No. at end of FY",
+        "Staff Strength - No. at start of FY": "Staff strength levels -No. at start of FY",
+        "Staff Strength - Recruitments in FY": "Staff strength levels -Recruitments in FY",
+        "Academic Qualifications - Bachelors degree": "Academic qualifications (No. of staff at the end of FY)-Bachelors degree",
+        "Academic Qualifications - Masters degree (or above)": "Academic qualifications (No. of staff at the end of FY)-Masters degree (or above)",
+        "Length of Service - 10-19 years": "Length of service (No. of staff at the end of FY)-10-19 years",
+        "Length of Service - 5-9 years": "Length of service (No. of staff at the end of FY)-5-9 years",
+        "Length of Service - Over 19 years": "Length of service (No. of staff at the end of FY)-Over 19 years",
+        "Length of Service - Under 5 years": "Length of service (No. of staff at the end of FY)-Under 5 years"
+    }
+    selected_hc = st.selectbox(
+        "Select Human Capital Strength Indicator:",
+        options=list(human_capital_indicators.keys()),
+        key="hc_capacity_selectbox"
+    )
+    display_name = selected_hc
+    label = human_capital_indicators[display_name]
+    data = filtered_data[filtered_data['indicator_label'] == label]
+    if not data.empty:
+        visualize_indicator(
+            df=data,
+            indicator_label=label,
+            chart_type="bar",
+            title=display_name,
+            y_title="Number of Staff",
+            x_title="Year",
+            color_by="country_or_area"
+        )
+        with st.expander(f"View Data Table: {display_name}"):
+            st.dataframe(data)
+    else:
+        st.info(f"No data available for {display_name}.")
+
+    # Learn more expander after all groups
+    with st.expander("Learn more about Indicator 4.4.3.2: Capacity of Tax and Customs Authorities"):
+        st.markdown("""
+4.4.3.2. Capacity of Tax and Customs Authorities
+
+This indicator assesses the capacity and effectiveness of tax and customs authorities in detecting and preventing illicit financial flows (IFFs). Due to the limited availability of direct performance metrics, the analysis uses proxy indicators based on the IMF ISORA survey and related sources.
+
+**Data Sources and Proxy Indicators**
+
+- **Operating Metrics Audit:** Includes criminal investigations, dispute resolution, and tax crime investigation (IMF ISORA).
+- **Resources and ICT Infrastructure:** Covers tax administration expenditures, FTEs, and operational ICT solutions (IMF ISORA).
+- **Staff Metrics:** Measures staff strength, academic qualifications, and length of service (IMF ISORA).
+
+**Calculation Approach**
+
+- **Standardizing Scores:** Normalize values across different metrics to ensure comparability.
+- **Composite Index:** Aggregate the standardized metrics to create a composite measure of capacity and effectiveness.
+- **Trend Analysis:** Track changes over time to assess improvements or declines in capacity.
+
+**Rationale for Using These Proxies**
+
+- The IMF ISORA survey provides comprehensive, cross-country data on tax and customs administration operations.
+- Resource allocation, staff capacity, and operational effectiveness are key determinants of the ability to detect and prevent IFFs.
+        """)
+
+# === Tab 4: Financial Secrecy ===
 with tab4:
+    render_financial_secrecy_tab(filtered_data, filters)
+
+# === Tab 5: Impact on Development Finance ===
+with tab5:
     st.header("4.4.5: Impact on Development Finance")
     with st.expander("Learn more about Indicator 4.4.5: Impact on Development Finance"):
         st.markdown("""
@@ -507,51 +643,102 @@ This section assesses the impact of illicit financial flows (IFFs) on developmen
 - The social impact indicator highlights the opportunity cost of lost tax revenue for essential public services.
         """)
 
+    st.subheader("4.4.5.1: Tax Buoyancy (Reduction in Financial Leakages)")
+    # List of available tax buoyancy indicators (from your screenshot)
+    tax_buoyancy_indicators = [
+        "Excise Taxes - % of GDP - Buoyancy",
+        "Income Taxes - % of GDP - Buoyancy",
+        "Personal income tax (PIT) buoyancy [by_pit]",
+        "Property Taxes - % of GDP - Buoyancy",
+        "Tax Revenue - % of GDP - Buoyancy",
+        "Tax buoyancy [by_tax]",
+        "Taxes on Goods and Services - % of GDP - Buoyancy",
+        "Trade Taxes - % of GDP - Buoyancy",
+        "Value-added tax (VAT) buoyancy [by_vat]"
+    ]
+    # Only show indicators that exist in the data
+    available_buoyancy = [label for label in tax_buoyancy_indicators if label in filtered_data['indicator_label'].unique()]
+    selected_buoyancy = st.selectbox(
+        "Select Tax Buoyancy Indicator:",
+        options=available_buoyancy,
+        key="tax_buoyancy_selector"
+    )
+    buoyancy_data = filtered_data[filtered_data['indicator_label'] == selected_buoyancy]
+    if not buoyancy_data.empty:
+        visualize_indicator(
+            df=buoyancy_data,
+            indicator_label=selected_buoyancy,
+            chart_type="line",
+            title=selected_buoyancy,
+            y_title="Buoyancy Ratio",
+            x_title="Year",
+            color_by="country_or_area"
+        )
+        with st.expander(f"View Data Table: {selected_buoyancy}"):
+            st.dataframe(buoyancy_data[['country_or_area', 'year', 'value']].sort_values(['country_or_area', 'year']))
+    else:
+        st.info(f"No data available for {selected_buoyancy}")
+    with st.expander("Learn more about Indicator 4.4.5.1: Tax Buoyancy"):
+        st.markdown("""
+**Definition:** Tax buoyancy is the ratio of the percentage change in tax revenue to the percentage change in GDP. It measures how responsive a taxation policy is to growth in economic activities. A buoyancy greater than 1 indicates that tax revenue is growing faster than GDP, reflecting effective tax policy and administration.
+
+**Proxy Justification:** Used here as a proxy for reduction in financial leakages due to effective anti-IFF measures.
+        """)
+
     subindicators_445 = {
-        "4.4.5.1: Tax Buoyancy (Reduction in Financial Leakages)": {
-            "content": lambda: st.info("Placeholder for Tax Buoyancy data visualization and table."),
-        },
         "4.4.5.2: Social Impact of Lost Tax (Improvement in Revenue Collection)": {
             "content": lambda: st.info("Placeholder for Social Impact of Lost Tax data visualization and table."),
         }
     }
-
     selected_sub_445 = st.selectbox("Select sub-indicator:", list(subindicators_445.keys()), key="impact_dev_finance_subindicator")
     subindicators_445[selected_sub_445]["content"]()
 
-# === Tab 5: Policy and Regulatory Environment ===
-with tab5:
+# === Tab 6: Policy and Regulatory Environment ===
+with tab6:
     st.header("4.4.6: Policy and Regulatory Environment")
     with st.expander("Learn more about Indicator 4.4.6: Policy and Regulatory Environment"):
-        st.markdown("""
+            st.markdown("""
 4.4.6. Policy and Regulatory Environment
 
 This section assesses the implementation and effectiveness of policies aimed at reducing illicit financial flows (IFFs), with a focus on sector-specific regulations and rent sharing arrangements in the mining sector.
-
-**Data Sources and Proxy Indicators**
-
-- **Implementation of Anti-IFF Policies:** Number and effectiveness of policies aimed at reducing IFFs.
-- **Specific Sectors:** Lists the laws and regulations that govern the taxation and mining activity of each country, including counts of general regime and mining regime.
-- **Rent Sharing:** Examines rent sharing arrangements between the state and investors in the mining sector.
-
-**Calculation Approach**
-
-- **Policy Count:** Count the number of relevant laws and regulations for each country and sector.
-- **Effectiveness Assessment:** Qualitatively or quantitatively assess the effectiveness of these policies where data is available.
-
-**Rationale for Using These Proxies**
-
-- The presence and quality of sector-specific regulations and rent sharing arrangements are key determinants of a country's ability to reduce IFFs, especially in resource-rich sectors like mining.
         """)
 
     subindicators_446 = {
+        "4.4.6.1: Implementation of Anti-IFF Policies": {
+            "content": lambda: st.info("Placeholder for number and effectiveness of anti-IFF policies data visualization and table."),
+            "learn_more": lambda: st.markdown("""
+**Definition:** Number and effectiveness of policies aimed at reducing illicit financial flows (IFFs).
+
+**Methodology:** Count and assess the effectiveness of national policies, laws, and regulations specifically targeting IFFs.
+
+**Rationale:** Effective policy implementation is a key determinant of a country's ability to reduce IFFs.
+            """)
+        },
         "4.4.6.1.a: Specific Sectors (Taxation and Mining Laws/Regimes)": {
             "content": lambda: st.info("Placeholder for laws and regulations governing taxation and mining activity data visualization and table."),
+            "learn_more": lambda: st.markdown("""
+**Definition:** Lists the laws and regulations that govern the taxation and mining activity of each country. This includes counting the number of general regime and mining regime for each country.
+
+**Methodology:** For each country, count the number of general regime and mining regime laws and regulations.
+
+**Rationale:** Provides a comparative overview of the regulatory environment for mining and taxation across African countries.
+            """)
         },
         "4.4.6.1.a: Rent Sharing Between State and Investors": {
             "content": lambda: st.info("Placeholder for rent sharing arrangements data visualization and table."),
+            "learn_more": lambda: st.markdown("""
+**Definition:** Examines rent sharing arrangements between the state and investors in the mining sector. Uses the Legal and Tax Database on Gold Mining in Africa to count the number of general regime and mining regime.
+
+**Data Source:** [ICTD Legal and Tax Database on Gold Mining in Africa](https://www.ictd.ac/dataset/legal-tax-database-gold-mining-africa/)
+
+**Methodology:** For each country, count the number of general regime and mining regime related to rent sharing.
+
+**Rationale:** Provides insight into how mining rents are distributed between the state and private investors.
+            """)
         }
     }
 
     selected_sub_446 = st.selectbox("Select sub-indicator:", list(subindicators_446.keys()), key="policy_reg_env_subindicator")
     subindicators_446[selected_sub_446]["content"]()
+    with st.expander(f"Learn more about {selected_sub_446}"):
+        subindicators_446[selected_sub_446]["learn_more"]()

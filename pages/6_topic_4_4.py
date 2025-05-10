@@ -5,6 +5,8 @@ import plotly.graph_objs as go
 import altair as alt
 from composite_indicator_methods import calculate_corruption_losses
 from special_pages.tab_4_4_4 import render_financial_secrecy_tab
+import plotly.express as px
+import data_gap_visualization as dgv
 
 # Load data
 df = load_main_data("data/nexus.parquet")
@@ -22,7 +24,7 @@ st.markdown("""
 This section analyzes illicit financial flows (IFFs) in Africa, including their magnitude, types, and enforcement measures.
 """)
 
-# Create tabs
+# === Tabs for 4.4 subtopics ===
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "4.4.1: Magnitude of IFFs",
     "4.4.2: Types of IFFs",
@@ -32,96 +34,24 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "4.4.6: Policy and Regulatory Environment"
 ])
 
-# === Tab 1: Magnitude of IFFs ===
 with tab1:
-    st.header("4.4.1: Magnitude of IFFs")
-    subindicators_441 = {
-        "4.4.1.1: IFFs as % of GDP": {
-            "indicator_label": "IFFs as % of GDP",
-            "chart_type": "line",
-            "y_title": "Percentage of GDP",
-            "learn_more": lambda: st.markdown(r'''
-**Definition:**
-Illicit financial flows (IFFs) are cross-border movements of money that are illegal in origin, transfer, or use. This includes tax evasion, trade mispricing, corruption, and proceeds from criminal activity. Measuring IFFs as a percentage of GDP helps contextualize their relative economic burden on countries.
-
-**Africa-wide Estimates:**
-- Africa loses an estimated **3.7% of its GDP annually** to IFFs, based on mid-2010s data. Over the period 2000–2015, the average was around **2.6% of GDP**, suggesting the scale of the problem has grown. This ratio is among the highest globally, indicating that IFFs are a major systemic drain on Africa's economies.
-
-**Regional Variations:**
-- **West Africa:** Median IFFs reach **10.3% of GDP**, the highest in the continent.
-- **North Africa:** Experiences the lowest relative levels, at around **2.7% of GDP**.
-These differences often reflect sectoral exposure (e.g. extractives), institutional quality, and tax base structure.
-
-**Policy Relevance:**
-IFFs of this magnitude reduce fiscal space, increase debt dependence, and compromise SDG financing. Reducing IFFs could recapture significant domestic resources for investment in health, education, and infrastructure.
-
-<details>
-<summary>📌 <b>Sources & Footnotes</b></summary>
-<ul>
-<li>UNCTAD (2020). Economic Development in Africa Report: Tackling Illicit Financial Flows for Sustainable Development in Africa, p. 3.</li>
-<li>Ibid., p. 24, 28–29, 52.</li>
-</ul>
-</details>
-            ''', unsafe_allow_html=True)
-        },
-        "4.4.1.2: Annual IFF Volume": {
-            "indicator_label": "Annual IFF Volume (USD)",
-            "chart_type": "bar",
-            "y_title": "Volume (USD)",
-            "learn_more": lambda: st.markdown(r'''
-**Estimate:**
-UNCTAD estimates that Africa loses approximately **USD 88.6 billion each year** through illicit financial flows. This far exceeds the annual aid inflows (~USD 48 billion) and foreign direct investment (~USD 54 billion) received by the continent.
-
-**Country-Level Figures (2013–2015):**
-- **Nigeria:** USD 41 billion
-- **Egypt:** USD 17.5 billion
-- **South Africa:** USD 14.1 billion
-
-**Cumulative Losses:**
-From 2000–2015, cumulative IFFs from Africa amounted to about **USD 836 billion**.
-
-**Main Channels of IFFs:**
-- **Commercial Tax Practices** (e.g. trade mispricing, profit shifting): ~65% of total IFFs
-- **Corruption-related flows:** Bribery, embezzlement, and public sector theft
-- **Illicit Markets and Smuggling:** Drugs, arms, wildlife, etc.
-- **Terrorist Financing and Criminal Proceeds**
-
-**Sector Spotlight – Extractives:**
-In 2015, under-invoicing of African extractive exports accounted for **USD 40 billion in losses** — with gold alone representing 77% of the total mispriced value.
-
-**Policy Implications:**
-IFFs deprive Africa of the financial means to achieve sustainable development. Combatting IFFs would directly support SDG 16.4 and unlock billions in domestic resources. Targeted policies in financial transparency, tax reform, anti-money laundering, and global asset recovery are critical.
-
-<details>
-<summary>📌 <b>Sources & Footnotes</b></summary>
-<ul>
-<li>UNCTAD (2020). Economic Development in Africa Report: Tackling Illicit Financial Flows for Sustainable Development in Africa, p. 3, 24, 25, 28–29, 35, 40, 44, 52.</li>
-</ul>
-</details>
-            ''', unsafe_allow_html=True)
-        }
-    }
-    selected_441 = st.selectbox("Select sub-indicator:", list(subindicators_441.keys()), key="441_subindicator")
-    indicator_label = subindicators_441[selected_441]["indicator_label"]
-    chart_type = subindicators_441[selected_441]["chart_type"]
-    y_title = subindicators_441[selected_441]["y_title"]
-    data = filtered_data[filtered_data['indicator_label'] == indicator_label]
-    if not data.empty:
-        visualize_indicator(
-            df=data,
-            indicator_label=indicator_label,
-            chart_type=chart_type,
-            title=selected_441,
-            y_title=y_title,
-            x_title="Year" if chart_type == "line" else "Country",
-            color_by="country_or_area"
-        )
-        with st.expander(f"View Data Table: {selected_441}"):
-            st.dataframe(data[['country_or_area', 'year', 'value']].sort_values(['country_or_area', 'year']))
-    else:
-        st.info(f"No data available for {selected_441}")
-    with st.expander(f"Learn more about {selected_441}"):
-        subindicators_441[selected_441]["learn_more"]()
+    from special_pages.tab_4_4_1 import render_tab_4_4_1
+    render_tab_4_4_1(filtered_data, filters)
+    # Data gap section for 4.4.1
+    indicators_in_tab1 = filtered_data['indicator_label'].unique()
+    st.markdown("### Data Availability Analysis (4.4.1)")
+    selected_gap_indicator_441 = st.selectbox(
+        "Select indicator to analyze data availability:",
+        options=indicators_in_tab1,
+        key="topic4_4_1_gap_indicator_select"
+    )
+    dgv.render_data_gap_section(
+        df=filtered_data,
+        indicator_label=selected_gap_indicator_441,
+        reference_data=country_ref,
+        title=f"Data Availability Analysis for {selected_gap_indicator_441}",
+        container_key="topic4_4_1_gap_analysis"
+    )
 
 # === Tab 2: Types of IFFs ===
 with tab2:
@@ -193,7 +123,7 @@ Trade mispricing is a major channel for illicit financial flows, undermining dom
             with tab_proxy:
                 st.markdown("""
 Proxy justification: GFI's trade gap data is widely used for estimating IFFs due to trade mispricing, as direct measurement is not feasible.
-                """)
+""")
 
     # Indicator 4.4.2.2: Tax Evasion
     with st.container():
@@ -264,7 +194,7 @@ Tax evasion reduces government revenue, limits public investment, and distorts e
             with tab_proxy:
                 st.markdown("""
 Proxy justification: IMF tax registration data provides a standardized approach to estimate taxpayer activity and evasion across countries.
-                """)
+""")
 
     # Indicator 4.4.2.3: Criminal Activities
     with st.container():
@@ -273,7 +203,10 @@ Proxy justification: IMF tax registration data provides a standardized approach 
         
         # Remove debugging lines
         # Set chart_type to 'line' for the Criminal Activities indicator
-        crime_data = filtered_data[filtered_data['indicator_code'].astype(str).str.strip() == 'UNODC.DPS.losses']
+        if 'indicator_code' in filtered_data.columns:
+            crime_data = filtered_data[filtered_data['indicator_code'].astype(str).str.strip() == 'UNODC.DPS.losses']
+        else:
+            crime_data = filtered_data[filtered_data['indicator_label'].astype(str).str.strip() == 'UNODC.DPS.losses']
         if not crime_data.empty:
             chart = visualize_indicator(
                 df=crime_data,
@@ -372,7 +305,7 @@ Corruption and bribery facilitate IFFs, erode trust in institutions, and hinder 
 - Includes surveys, expert assessments, and NGO reports
 - Uses Unobserved Components Model (UCM) for robust aggregation
 - Provides comprehensive view of governance quality
-                """)
+""")
 
 # === Tab 3: Detection and Enforcement ===
 with tab3:
@@ -614,9 +547,40 @@ This indicator assesses the capacity and effectiveness of tax and customs author
 - Resource allocation, staff capacity, and operational effectiveness are key determinants of the ability to detect and prevent IFFs.
         """)
 
+    # Data gap section for 4.4.3
+    indicators_in_tab3 = filtered_data['indicator_label'].unique()
+    st.markdown("### Data Availability Analysis (4.4.3)")
+    selected_gap_indicator_443 = st.selectbox(
+        "Select indicator to analyze data availability:",
+        options=indicators_in_tab3,
+        key="topic4_4_3_gap_indicator_select"
+    )
+    dgv.render_data_gap_section(
+        df=filtered_data,
+        indicator_label=selected_gap_indicator_443,
+        reference_data=country_ref,
+        title=f"Data Availability Analysis for {selected_gap_indicator_443}",
+        container_key="topic4_4_3_gap_analysis"
+    )
+
 # === Tab 4: Financial Secrecy ===
 with tab4:
     render_financial_secrecy_tab(filtered_data, filters)
+    # Data gap section for 4.4.4
+    indicators_in_tab4 = filtered_data['indicator_label'].unique()
+    st.markdown("### Data Availability Analysis (4.4.4)")
+    selected_gap_indicator_444 = st.selectbox(
+        "Select indicator to analyze data availability:",
+        options=indicators_in_tab4,
+        key="topic4_4_4_gap_indicator_select"
+    )
+    dgv.render_data_gap_section(
+        df=filtered_data,
+        indicator_label=selected_gap_indicator_444,
+        reference_data=country_ref,
+        title=f"Data Availability Analysis for {selected_gap_indicator_444}",
+        container_key="topic4_4_4_gap_analysis"
+    )
 
 # === Tab 5: Impact on Development Finance ===
 with tab5:
@@ -685,13 +649,76 @@ This section assesses the impact of illicit financial flows (IFFs) on developmen
 **Proxy Justification:** Used here as a proxy for reduction in financial leakages due to effective anti-IFF measures.
         """)
 
+    def render_social_impact_of_lost_tax():
+        st.markdown("### Indicator 4.4.5.2: Social Impact of Lost Tax")
+        st.caption("Tax loss equivalent to the percentage of health and education budget")
+        data = filtered_data[filtered_data['indicator_label'] == 'sotj20_loss_total_share_healthexpenses']
+        if not data.empty:
+            fig = px.line(
+                data,
+                x='year',
+                y='value',
+                color='country_or_area',
+                title="Tax Loss as % of Health and Education Budget",
+                labels={
+                    'value': 'Tax Loss (% of Health & Education Budget)',
+                    'year': 'Year',
+                    'country_or_area': 'Country'
+                }
+            )
+            fig.update_layout(
+                xaxis_title="Year",
+                yaxis_title="Tax Loss (% of Health & Education Budget)",
+                legend_title="Country"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+            with st.expander("View Data Table"):
+                st.dataframe(
+                    data[['country_or_area', 'year', 'value']]
+                    .sort_values(['country_or_area', 'year'])
+                    .style.format({'value': '{:.2f}%'})
+                )
+        else:
+            st.info("No data available for Tax Loss as % of Health and Education Budget")
+        with st.expander("🔍 Learn more about Indicator 4.4.5.2"):
+            tab_def, tab_rel, tab_proxy = st.tabs(["📘 Definition", "📌 Relevance", "📊 Proxy Justification"])
+            with tab_def:
+                st.markdown("""
+This indicator measures the social impact of lost tax revenue by comparing it to government spending on health and education. It shows what percentage of these essential public services could have been funded with the lost tax revenue.
+                """)
+            with tab_rel:
+                st.markdown("""
+- **Efficiency**: Shows the opportunity cost of tax losses in terms of essential public services
+- **Effectiveness**: Highlights the social impact of improving tax collection
+                """)
+            with tab_proxy:
+                st.markdown("""
+The indicator uses data from the State of Tax Justice report, which provides standardized estimates of tax losses and their impact on public services across countries.
+                """)
+
     subindicators_445 = {
         "4.4.5.2: Social Impact of Lost Tax (Improvement in Revenue Collection)": {
-            "content": lambda: st.info("Placeholder for Social Impact of Lost Tax data visualization and table."),
+            "content": render_social_impact_of_lost_tax
         }
     }
     selected_sub_445 = st.selectbox("Select sub-indicator:", list(subindicators_445.keys()), key="impact_dev_finance_subindicator")
     subindicators_445[selected_sub_445]["content"]()
+
+    # Data gap section for 4.4.5
+    indicators_in_tab5 = filtered_data['indicator_label'].unique()
+    st.markdown("### Data Availability Analysis (4.4.5)")
+    selected_gap_indicator_445 = st.selectbox(
+        "Select indicator to analyze data availability:",
+        options=indicators_in_tab5,
+        key="topic4_4_5_gap_indicator_select"
+    )
+    dgv.render_data_gap_section(
+        df=filtered_data,
+        indicator_label=selected_gap_indicator_445,
+        reference_data=country_ref,
+        title=f"Data Availability Analysis for {selected_gap_indicator_445}",
+        container_key="topic4_4_5_gap_analysis"
+    )
 
 # === Tab 6: Policy and Regulatory Environment ===
 with tab6:
@@ -742,3 +769,19 @@ This section assesses the implementation and effectiveness of policies aimed at 
     subindicators_446[selected_sub_446]["content"]()
     with st.expander(f"Learn more about {selected_sub_446}"):
         subindicators_446[selected_sub_446]["learn_more"]()
+
+    # Data gap section for 4.4.6
+    indicators_in_tab6 = filtered_data['indicator_label'].unique()
+    st.markdown("### Data Availability Analysis (4.4.6)")
+    selected_gap_indicator_446 = st.selectbox(
+        "Select indicator to analyze data availability:",
+        options=indicators_in_tab6,
+        key="topic4_4_6_gap_indicator_select"
+    )
+    dgv.render_data_gap_section(
+        df=filtered_data,
+        indicator_label=selected_gap_indicator_446,
+        reference_data=country_ref,
+        title=f"Data Availability Analysis for {selected_gap_indicator_446}",
+        container_key="topic4_4_6_gap_analysis"
+    )

@@ -7,6 +7,7 @@ from composite_indicator_methods import calculate_corruption_losses
 from special_pages.tab_4_4_4 import render_financial_secrecy_tab
 import plotly.express as px
 import data_gap_visualization as dgv
+import universal_viz as uv
 
 # Load data
 df = load_main_data("data/nexus.parquet")
@@ -34,24 +35,13 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "4.4.6: Policy and Regulatory Environment"
 ])
 
+africa_countries = country_ref[country_ref['Region Name'] == 'Africa']['Country or Area'].unique()
+df_africa = df[df['country_or_area'].isin(africa_countries)]
+
 with tab1:
     from special_pages.tab_4_4_1 import render_tab_4_4_1
     render_tab_4_4_1(filtered_data, filters)
-    # Data gap section for 4.4.1
-    indicators_in_tab1 = filtered_data['indicator_label'].unique()
-    st.markdown("### Data Availability Analysis (4.4.1)")
-    selected_gap_indicator_441 = st.selectbox(
-        "Select indicator to analyze data availability:",
-        options=indicators_in_tab1,
-        key="topic4_4_1_gap_indicator_select"
-    )
-    dgv.render_data_gap_section(
-        df=filtered_data,
-        indicator_label=selected_gap_indicator_441,
-        reference_data=country_ref,
-        title=f"Data Availability Analysis for {selected_gap_indicator_441}",
-        container_key="topic4_4_1_gap_analysis"
-    )
+    # (No Geographical Distribution section in this tab)
 
 # === Tab 2: Types of IFFs ===
 with tab2:
@@ -123,7 +113,7 @@ Trade mispricing is a major channel for illicit financial flows, undermining dom
             with tab_proxy:
                 st.markdown("""
 Proxy justification: GFI's trade gap data is widely used for estimating IFFs due to trade mispricing, as direct measurement is not feasible.
-""")
+                """)
 
     # Indicator 4.4.2.2: Tax Evasion
     with st.container():
@@ -194,7 +184,7 @@ Tax evasion reduces government revenue, limits public investment, and distorts e
             with tab_proxy:
                 st.markdown("""
 Proxy justification: IMF tax registration data provides a standardized approach to estimate taxpayer activity and evasion across countries.
-""")
+                """)
 
     # Indicator 4.4.2.3: Criminal Activities
     with st.container():
@@ -305,7 +295,31 @@ Corruption and bribery facilitate IFFs, erode trust in institutions, and hinder 
 - Includes surveys, expert assessments, and NGO reports
 - Uses Unobserved Components Model (UCM) for robust aggregation
 - Provides comprehensive view of governance quality
-""")
+                """)
+
+    # Geographical Distribution for tab2
+    st.markdown("#### Geographical Distribution")
+    trade_mispricing_labels = [
+        "The Sums of the Value Gaps Identified in Trade Between 134 Developing Countries and 36 Advanced Economies, 2009–2018, in USD Millions",
+        "The Sums of the Value Gaps Identified in Trade Between 134 Developing Countries and all of their Global Trading Partners, 2009–2018 in USD Millions",
+        "The Total Value Gaps Identified Between 134 Developing Countries and 36 Advanced Economies, 2009–2018, as a Percent of Total Trade",
+        "The Total Value Gaps Identified in Trade Between 134 Developing Countries and all of their Trading Partners, 2009–2018 as a Percent of Total Trade"
+    ]
+    selected_map_indicator_442 = st.selectbox(
+        "Select indicator for map view:",
+        options=trade_mispricing_labels,
+        key="topic4_4_2_map_indicator_select"
+    )
+    uv.render_indicator_map(
+        df=filtered_data,
+        indicator_label=selected_map_indicator_442,
+        title="",
+        description=f"Geographical distribution of latest {selected_map_indicator_442} values.",
+        reference_data=country_ref,
+        year_range=filters.get('year_range'),
+        map_options={'color_continuous_scale': 'Blues'},
+        container_key="topic4_4_2_map"
+    )
 
 # === Tab 3: Detection and Enforcement ===
 with tab3:
@@ -547,39 +561,54 @@ This indicator assesses the capacity and effectiveness of tax and customs author
 - Resource allocation, staff capacity, and operational effectiveness are key determinants of the ability to detect and prevent IFFs.
         """)
 
-    # Data gap section for 4.4.3
-    indicators_in_tab3 = filtered_data['indicator_label'].unique()
-    st.markdown("### Data Availability Analysis (4.4.3)")
-    selected_gap_indicator_443 = st.selectbox(
-        "Select indicator to analyze data availability:",
-        options=indicators_in_tab3,
-        key="topic4_4_3_gap_indicator_select"
+    # Geographical Distribution for tab3
+    st.markdown("#### Geographical Distribution")
+    tab3_labels = [
+        "Rule of Law",
+        "Control of Corruption: Estimate",
+        "Role of the administration in tax crime investigations - Conducting investigations, under direction of other agency",
+        "FTEs by function of the tax administration-Audit, investigation and other verification",
+        "FTEs by function of the tax administration-Enforced debt collection and related functions",
+        "FTEs by function of the tax administration-Other functions",
+        "FTEs by function of the tax administration-Registration, taxpayer services, returns and payment processing",
+        "Total tax administration FTEs - Derived"
+    ]
+    selected_map_indicator_443 = st.selectbox(
+        "Select indicator for map view:",
+        options=tab3_labels,
+        key="topic4_4_3_map_indicator_select"
     )
-    dgv.render_data_gap_section(
+    uv.render_indicator_map(
         df=filtered_data,
-        indicator_label=selected_gap_indicator_443,
+        indicator_label=selected_map_indicator_443,
+        title="",
+        description=f"Geographical distribution of latest {selected_map_indicator_443} values.",
         reference_data=country_ref,
-        title=f"Data Availability Analysis for {selected_gap_indicator_443}",
-        container_key="topic4_4_3_gap_analysis"
+        year_range=filters.get('year_range'),
+        map_options={'color_continuous_scale': 'Blues'},
+        container_key="topic4_4_3_map"
     )
 
 # === Tab 4: Financial Secrecy ===
 with tab4:
     render_financial_secrecy_tab(filtered_data, filters)
-    # Data gap section for 4.4.4
-    indicators_in_tab4 = filtered_data['indicator_label'].unique()
-    st.markdown("### Data Availability Analysis (4.4.4)")
-    selected_gap_indicator_444 = st.selectbox(
-        "Select indicator to analyze data availability:",
-        options=indicators_in_tab4,
-        key="topic4_4_4_gap_indicator_select"
+    # Geographical Distribution for tab4
+    st.markdown("#### Geographical Distribution")
+    fsi_labels = [label for label in filtered_data['indicator_label'].unique() if label.startswith('fsi_') and label.endswith('_value')]
+    selected_map_indicator_444 = st.selectbox(
+        "Select indicator for map view:",
+        options=fsi_labels,
+        key="topic4_4_4_map_indicator_select"
     )
-    dgv.render_data_gap_section(
+    uv.render_indicator_map(
         df=filtered_data,
-        indicator_label=selected_gap_indicator_444,
+        indicator_label=selected_map_indicator_444,
+        title="",
+        description=f"Geographical distribution of latest {selected_map_indicator_444} values.",
         reference_data=country_ref,
-        title=f"Data Availability Analysis for {selected_gap_indicator_444}",
-        container_key="topic4_4_4_gap_analysis"
+        year_range=filters.get('year_range'),
+        map_options={'color_continuous_scale': 'Blues'},
+        container_key="topic4_4_4_map"
     )
 
 # === Tab 5: Impact on Development Finance ===
@@ -704,20 +733,26 @@ The indicator uses data from the State of Tax Justice report, which provides sta
     selected_sub_445 = st.selectbox("Select sub-indicator:", list(subindicators_445.keys()), key="impact_dev_finance_subindicator")
     subindicators_445[selected_sub_445]["content"]()
 
-    # Data gap section for 4.4.5
-    indicators_in_tab5 = filtered_data['indicator_label'].unique()
-    st.markdown("### Data Availability Analysis (4.4.5)")
-    selected_gap_indicator_445 = st.selectbox(
-        "Select indicator to analyze data availability:",
-        options=indicators_in_tab5,
-        key="topic4_4_5_gap_indicator_select"
+    # Geographical Distribution for tab5
+    st.markdown("#### Geographical Distribution")
+    tab5_labels = [
+        "Tax Revenue - % of GDP - Buoyancy",
+        "sotj20_loss_total_share_healthexpenses"
+    ]
+    selected_map_indicator_445 = st.selectbox(
+        "Select indicator for map view:",
+        options=tab5_labels,
+        key="topic4_4_5_map_indicator_select"
     )
-    dgv.render_data_gap_section(
+    uv.render_indicator_map(
         df=filtered_data,
-        indicator_label=selected_gap_indicator_445,
+        indicator_label=selected_map_indicator_445,
+        title="",
+        description=f"Geographical distribution of latest {selected_map_indicator_445} values.",
         reference_data=country_ref,
-        title=f"Data Availability Analysis for {selected_gap_indicator_445}",
-        container_key="topic4_4_5_gap_analysis"
+        year_range=filters.get('year_range'),
+        map_options={'color_continuous_scale': 'Blues'},
+        container_key="topic4_4_5_map"
     )
 
 # === Tab 6: Policy and Regulatory Environment ===
@@ -770,18 +805,69 @@ This section assesses the implementation and effectiveness of policies aimed at 
     with st.expander(f"Learn more about {selected_sub_446}"):
         subindicators_446[selected_sub_446]["learn_more"]()
 
-    # Data gap section for 4.4.6
-    indicators_in_tab6 = filtered_data['indicator_label'].unique()
-    st.markdown("### Data Availability Analysis (4.4.6)")
-    selected_gap_indicator_446 = st.selectbox(
-        "Select indicator to analyze data availability:",
-        options=indicators_in_tab6,
-        key="topic4_4_6_gap_indicator_select"
+    # Geographical Distribution for tab6
+    st.markdown("#### Geographical Distribution")
+    tab6_labels = [
+        "Rule of Law Index",
+        "Tax Revenue Losses"
+    ]
+    selected_map_indicator_446 = st.selectbox(
+        "Select indicator for map view:",
+        options=tab6_labels,
+        key="topic4_4_6_map_indicator_select"
     )
-    dgv.render_data_gap_section(
+    uv.render_indicator_map(
         df=filtered_data,
-        indicator_label=selected_gap_indicator_446,
+        indicator_label=selected_map_indicator_446,
+        title="",
+        description=f"Geographical distribution of latest {selected_map_indicator_446} values.",
         reference_data=country_ref,
-        title=f"Data Availability Analysis for {selected_gap_indicator_446}",
-        container_key="topic4_4_6_gap_analysis"
+        year_range=filters.get('year_range'),
+        map_options={'color_continuous_scale': 'Blues'},
+        container_key="topic4_4_6_map"
+    )
+
+# Collect all indicators used in the Geographical Distribution sections of tabs 4.4.2–4.4.6
+trade_mispricing_labels = [
+    "The Sums of the Value Gaps Identified in Trade Between 134 Developing Countries and 36 Advanced Economies, 2009–2018, in USD Millions",
+    "The Sums of the Value Gaps Identified in Trade Between 134 Developing Countries and all of their Global Trading Partners, 2009–2018 in USD Millions",
+    "The Total Value Gaps Identified Between 134 Developing Countries and 36 Advanced Economies, 2009–2018, as a Percent of Total Trade",
+    "The Total Value Gaps Identified in Trade Between 134 Developing Countries and all of their Trading Partners, 2009–2018 as a Percent of Total Trade"
+]
+tab3_labels = [
+    "Rule of Law",
+    "Control of Corruption: Estimate",
+    "Role of the administration in tax crime investigations - Conducting investigations, under direction of other agency",
+    "FTEs by function of the tax administration-Audit, investigation and other verification",
+    "FTEs by function of the tax administration-Enforced debt collection and related functions",
+    "FTEs by function of the tax administration-Other functions",
+    "FTEs by function of the tax administration-Registration, taxpayer services, returns and payment processing",
+    "Total tax administration FTEs - Derived"
+]
+fsi_labels = [label for label in filtered_data['indicator_label'].unique() if label.startswith('fsi_') and label.endswith('_value')]
+tab5_labels = [
+    "Tax Revenue - % of GDP - Buoyancy",
+    "sotj20_loss_total_share_healthexpenses"
+]
+tab6_labels = [
+    "Rule of Law Index",
+    "Tax Revenue Losses"
+]
+# Combine and deduplicate
+all_gap_indicators = list(dict.fromkeys(
+    trade_mispricing_labels + tab3_labels + fsi_labels + tab5_labels + tab6_labels
+))
+
+st.divider()
+with st.expander("Understand the data gap in Africa for this topic"):
+    selected_gap_indicator = st.selectbox(
+        "Select indicator to view data availability:",
+        options=all_gap_indicators,
+        key="topic4_4_gap_indicator_select"
+    )
+    uv.render_data_availability_heatmap(
+        df=df_africa,
+        indicator_label=selected_gap_indicator,
+        title=f"Data Availability for {selected_gap_indicator} (Africa)",
+        container_key="topic4_4_gap"
     )

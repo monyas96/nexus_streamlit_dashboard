@@ -805,28 +805,6 @@ This section assesses the implementation and effectiveness of policies aimed at 
     with st.expander(f"Learn more about {selected_sub_446}"):
         subindicators_446[selected_sub_446]["learn_more"]()
 
-    # Geographical Distribution for tab6
-    st.markdown("#### Geographical Distribution")
-    tab6_labels = [
-        "Rule of Law Index",
-        "Tax Revenue Losses"
-    ]
-    selected_map_indicator_446 = st.selectbox(
-        "Select indicator for map view:",
-        options=tab6_labels,
-        key="topic4_4_6_map_indicator_select"
-    )
-    uv.render_indicator_map(
-        df=filtered_data,
-        indicator_label=selected_map_indicator_446,
-        title="",
-        description=f"Geographical distribution of latest {selected_map_indicator_446} values.",
-        reference_data=country_ref,
-        year_range=filters.get('year_range'),
-        map_options={'color_continuous_scale': 'Blues'},
-        container_key="topic4_4_6_map"
-    )
-
 # Collect all indicators used in the Geographical Distribution sections of tabs 4.4.2–4.4.6
 trade_mispricing_labels = [
     "The Sums of the Value Gaps Identified in Trade Between 134 Developing Countries and 36 Advanced Economies, 2009–2018, in USD Millions",
@@ -849,13 +827,9 @@ tab5_labels = [
     "Tax Revenue - % of GDP - Buoyancy",
     "sotj20_loss_total_share_healthexpenses"
 ]
-tab6_labels = [
-    "Rule of Law Index",
-    "Tax Revenue Losses"
-]
 # Combine and deduplicate
 all_gap_indicators = list(dict.fromkeys(
-    trade_mispricing_labels + tab3_labels + fsi_labels + tab5_labels + tab6_labels
+    trade_mispricing_labels + tab3_labels + fsi_labels + tab5_labels
 ))
 
 st.divider()

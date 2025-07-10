@@ -11,6 +11,7 @@ from typing import Optional, List, Dict, Union, Any, Callable
 
 # 1. Core visualization functions:
 
+
 def visualize_indicator(
     df: pd.DataFrame,
     indicator_label: Optional[str] = None,
@@ -31,7 +32,7 @@ def visualize_indicator(
     facet_cols: int = 2,
     domain: Optional[List[str]] = None,
     width: int = 700,
-    height: int = 400
+    height: int = 400,
 ) -> alt.Chart:
     """
     Enhanced visualization function for indicators with improved error handling.
@@ -67,7 +68,7 @@ def visualize_indicator(
         "stacked_bar": lambda data: alt.Chart(data).mark_bar(),
         "line": lambda data: alt.Chart(data).mark_line(point=True),
         "area": lambda data: alt.Chart(data).mark_area(opacity=0.5 if not stack else 1),
-        "point": lambda data: alt.Chart(data).mark_circle(size=60)
+        "point": lambda data: alt.Chart(data).mark_circle(size=60),
     }
 
     if chart_type not in chart_configs:
@@ -96,7 +97,9 @@ def visualize_indicator(
             st.session_state.debug["indicator_rows"] = len(filtered)
             st.session_state.debug["indicator_name"] = indicator_label
         else:
-            raise ValueError("Either indicator_label, indicator_code, or calculation_function must be provided")
+            raise ValueError(
+                "Either indicator_label, indicator_code, or calculation_function must be provided"
+            )
 
         # Filter by countries if specified
         if countries and len(countries) > 0:
@@ -108,25 +111,22 @@ def visualize_indicator(
 
         # Check if we have data
         if len(filtered) == 0:
-            st.warning(f"No data available for {'the selected countries' if countries else 'the selected parameters'}")
+            st.warning(
+                f"No data available for {'the selected countries' if countries else 'the selected parameters'}"
+            )
 
             # If no data, create a minimal placeholder visualization
-            empty_data = pd.DataFrame({
-                'year': [2020],
-                'value': [0],
-                'message': ['No data available']
-            })
+            empty_data = pd.DataFrame(
+                {"year": [2020], "value": [0], "message": ["No data available"]}
+            )
 
-            empty_chart = alt.Chart(empty_data).mark_text(
-                align='center',
-                baseline='middle',
-                fontSize=20
-            ).encode(
-                text='message'
-            ).properties(
-                width=width,
-                height=height,
-                title=title or "No Data Available"
+            empty_chart = (
+                alt.Chart(empty_data)
+                .mark_text(align="center", baseline="middle", fontSize=20)
+                .encode(text="message")
+                .properties(
+                    width=width, height=height, title=title or "No Data Available"
+                )
             )
 
             if show_chart:
@@ -147,7 +147,9 @@ def visualize_indicator(
         # Setup color configuration
         color_config = {}
         if color_scale:
-            color_config["scale"] = alt.Scale(domain=domain, range=list(color_scale.values()))
+            color_config["scale"] = alt.Scale(
+                domain=domain, range=list(color_scale.values())
+            )
 
         # Set default title if none provided
         if not title and indicator_label:
@@ -168,30 +170,36 @@ def visualize_indicator(
             chart = base.encode(
                 x=x_encode,
                 y=alt.Y("value:Q", title=y_title, stack="zero"),
-                color=alt.Color(f"{color_by}:N", title=color_by.replace('_', ' ').title(), **color_config),
-                tooltip=["country_or_area", x_field, "value", color_by]
+                color=alt.Color(
+                    f"{color_by}:N",
+                    title=color_by.replace("_", " ").title(),
+                    **color_config,
+                ),
+                tooltip=["country_or_area", x_field, "value", color_by],
             )
         else:
             chart = base.encode(
                 x=x_encode,
                 y=alt.Y("value:Q", title=y_title),
-                color=alt.Color(f"{color_by}:N", title=color_by.replace('_', ' ').title(), **color_config),
-                tooltip=["country_or_area", x_field, "value", color_by]
+                color=alt.Color(
+                    f"{color_by}:N",
+                    title=color_by.replace("_", " ").title(),
+                    **color_config,
+                ),
+                tooltip=["country_or_area", x_field, "value", color_by],
             )
 
         # Set chart properties
-        chart = chart.properties(
-            title=title,
-            width=width,
-            height=height
-        )
+        chart = chart.properties(title=title, width=width, height=height)
 
         # Handle faceting if requested
         if facet_by and facet_by in filtered.columns:
             chart = chart.facet(
-                facet=alt.Facet(f"{facet_by}:N", title=facet_by.replace('_', ' ').title()),
-                columns=facet_cols
-            ).resolve_scale(y='independent')
+                facet=alt.Facet(
+                    f"{facet_by}:N", title=facet_by.replace("_", " ").title()
+                ),
+                columns=facet_cols,
+            ).resolve_scale(y="independent")
 
         # Display the chart if requested
         if show_chart:
@@ -202,6 +210,7 @@ def visualize_indicator(
     except Exception as e:
         # Provide detailed error information
         import traceback
+
         error_details = traceback.format_exc()
 
         # Don't catch ValueError for invalid chart_type
@@ -209,180 +218,175 @@ def visualize_indicator(
             raise
 
         st.error(f"Error generating visualization: {str(e)}")
-        st.error(f"Debug info: chart_type={chart_type}, countries={countries[:3] if countries else None}...")
+        st.error(
+            f"Debug info: chart_type={chart_type}, countries={countries[:3] if countries else None}..."
+        )
 
         # Create a simple error chart
-        error_data = pd.DataFrame({'x': [0], 'y': [0], 'message': ['Error in visualization']})
-        error_chart = alt.Chart(error_data).mark_text(
-            align='center', baseline='middle', fontSize=16, color='red'
-        ).encode(text='message').properties(width=width, height=height, title="Visualization Error")
+        error_data = pd.DataFrame(
+            {"x": [0], "y": [0], "message": ["Error in visualization"]}
+        )
+        error_chart = (
+            alt.Chart(error_data)
+            .mark_text(align="center", baseline="middle", fontSize=16, color="red")
+            .encode(text="message")
+            .properties(width=width, height=height, title="Visualization Error")
+        )
 
         if show_chart:
             st.altair_chart(error_chart, use_container_width=True)
 
         return error_chart
 
+
 def create_choropleth_map(
     data,
-    location_column='country',
-    value_column='value',
-    title='Choropleth Map',
+    location_column="country_or_area",
+    value_column="value",
+    title="",
     reference_data=None,
-    iso_column='iso3',
+    iso_column="iso3",
     color_continuous_scale="Blues",
     range_color=None,
-    height=600,
-    width=None
+    height=700,
+    width=None,
 ):
     """
-    Creates an interactive choropleth map using Plotly Express.
-
-    Args:
-        data (pd.DataFrame): Dataframe containing the data to plot.
-        location_column (str): Column name for country names or ISO codes.
-        value_column (str): Column name for the values to plot.
-        title (str): Title of the map.
-        reference_data (pd.DataFrame, optional): Dataframe with country codes and potentially coordinates.
-        iso_column (str): Column name in reference_data containing ISO Alpha-3 codes.
-        color_continuous_scale (str or list): Plotly color scale.
-        range_color (tuple, optional): Min and max values for the color scale.
-        height (int): Height of the map figure.
-        width (int, optional): Width of the map figure. Defaults to container width.
-
-    Returns:
-        plotly.graph_objects.Figure: The generated choropleth map figure.
+    Creates a UN-style choropleth map of Africa with:
+    - Neutral basemap styling matching UN cartographic standards
+    - Proper treatment of all territories including Western Sahara
+    - All African island states included
+    - Required UN disclaimer
     """
     if data is None or data.empty:
         st.warning("No data provided for choropleth map.")
-        # Return an empty figure or a message figure
         fig = go.Figure()
         fig.update_layout(
-            title_text=f"{title} (No Data)",
-            height=height,
-            width=width,
-            geo=dict(bgcolor='rgba(0,0,0,0)', lakecolor='rgba(0,0,0,0)'),
-            annotations=[dict(text="No data available", showarrow=False)]
+            geo=dict(
+                scope="africa",
+                bgcolor="rgba(255,255,255,1)",
+                landcolor="rgba(230,230,230,1)",
+                lakecolor="rgba(200,230,255,1)",
+            ),
+            annotations=[
+                dict(
+                    text="No data available",
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=0.5,
+                    showarrow=False,
+                )
+            ],
         )
         return fig
 
+    # Prepare data with special cases
     plot_data = data.copy()
 
-    # Try to map country names to ISO codes if reference_data is provided
-    location_mode = 'country names' # Default
-    if reference_data is not None and not reference_data.empty:
-        # Ensure ISO column exists in reference data
-        if iso_column not in reference_data.columns:
-            st.error(f"ISO column '{iso_column}' not found in reference data.")
-            return go.Figure().update_layout(title_text=f"{title} (Error: Missing ISO Column)", height=height, width=width)
+    # Ensure Western Sahara is properly coded (ESH)
+    plot_data.loc[
+        plot_data[location_column].str.contains("Western Sahara", case=False), "iso3"
+    ] = "ESH"
 
-        # Standardize names in both dataframes for better matching
-        if location_column in plot_data.columns:
-            plot_data[f'{location_column}_std'] = plot_data[location_column].apply(standardize_country_name)
-        else:
-             st.error(f"Location column '{location_column}' not found in plot data.")
-             return go.Figure().update_layout(title_text=f"{title} (Error: Missing Location Column)", height=height, width=width)
+    # Manual ISO codes for island states if missing
+    island_states = {
+        "Seychelles": "SYC",
+        "Mauritius": "MUS",
+        "Cabo Verde": "CPV",
+        "Comoros": "COM",
+        "São Tomé and Príncipe": "STP",
+    }
+    for country, iso in island_states.items():
+        plot_data.loc[
+            plot_data[location_column].str.contains(country, case=False), "iso3"
+        ] = iso
 
-        ref_data_std = reference_data.copy()
-        # Use the correct country column from reference data
-        country_col = 'Country or Area' if 'Country or Area' in ref_data_std.columns else 'Country'
-        ref_data_std['country_std'] = ref_data_std[country_col].apply(standardize_country_name)
+    # Create the base map
+    fig = go.Figure()
 
-        # Create mapping from standardized name to ISO code
-        name_to_iso = ref_data_std.set_index('country_std')[iso_column].to_dict()
-
-        # Map ISO codes
-        plot_data['iso_code'] = plot_data[f'{location_column}_std'].map(name_to_iso)
-
-        # Check how many were successfully mapped
-        mapped_count = plot_data['iso_code'].notna().sum()
-        if mapped_count > 0:
-            location_mode = 'ISO-3'
-            locations = 'iso_code'
-            # Optional: Log unmapped countries
-            unmapped_raw = plot_data[plot_data['iso_code'].isna()][location_column].unique()
-            # Filter out None/NaN values and convert items to string before joining
-            unmapped_clean = [str(item) for item in unmapped_raw if pd.notna(item)]
-            if len(unmapped_clean) > 0:
-                st.info(f"Could not map ISO codes for: {', '.join(unmapped_clean[:5])}{'...' if len(unmapped_clean) > 5 else ''}")
-        else:
-            st.warning("Could not map any countries to ISO codes. Using country names.")
-            locations = location_column # Fallback to original names
-    else:
-        locations = location_column # Use original names if no ref data
-
-    # Ensure value column exists
-    if value_column not in plot_data.columns:
-        st.error(f"Value column '{value_column}' not found in data.")
-        # Return an empty figure or a message figure
-        fig = go.Figure()
-        fig.update_layout(
-            title_text=f"{title} (Error: Missing Value Column)",
-            height=height,
-            width=width,
-            annotations=[dict(text=f"Error: Column '{value_column}' not found.", showarrow=False)]
+    # Add main choropleth trace
+    fig.add_trace(
+        go.Choropleth(
+            locations=plot_data["iso3"],
+            z=plot_data[value_column],
+            locationmode="ISO-3",
+            colorscale=color_continuous_scale,
+            zmin=range_color[0] if range_color else None,
+            zmax=range_color[1] if range_color else None,
+            marker_line_width=0.5,
+            marker_line_color="rgba(100,100,100,0.5)",
+            hoverinfo="location+z",
+            hoverlabel=dict(bgcolor="white"),
         )
-        return fig
+    )
 
-    # Handle potential non-numeric data in value_column
-    plot_data[value_column] = pd.to_numeric(plot_data[value_column], errors='coerce')
-    plot_data = plot_data.dropna(subset=[value_column]) # Remove rows where conversion failed
-
-    if plot_data.empty:
-         st.warning("No valid numeric data to plot after cleaning.")
-         fig = go.Figure().update_layout(title_text=f"{title} (No Valid Data)", height=height, width=width)
-         return fig
-
-
-    try:
-        fig = px.choropleth(
-            plot_data,
-            locations=locations,
-            locationmode=location_mode,
-            color=value_column,
-            hover_name=location_column, # Show original country name on hover
-            hover_data={value_column: ':.2f', locations: False}, # Format value, hide internal ID
-            title=title,
-            color_continuous_scale=color_continuous_scale,
-            range_color=range_color,
-            scope="africa" # Focus map on Africa
+    # Add Western Sahara with special border treatment using Scattergeo
+    fig.add_trace(
+        go.Scattergeo(
+            locations=["ESH"],
+            locationmode="ISO-3",
+            mode="lines",
+            line=dict(width=0.5, color="rgba(100,100,100,0.5)", dash="dot"),
+            hoverinfo="none",
+            showlegend=False,
         )
+    )
 
-        fig.update_layout(
-            height=height,
-            width=width,
-            geo=dict(
-                bgcolor='rgba(0,0,0,0)',
-                lakecolor='rgba(0,0,0,0)',
-                landcolor='rgba(217, 217, 217, 1)',
-                subunitcolor='white'
-            ),
-            margin={"r":0,"t":40,"l":0,"b":0} # Adjust margins
-        )
-        return fig
+    # UN-Compliant Styling
+    fig.update_layout(
+        geo=dict(
+            bgcolor="rgba(255,255,255,1)",  # White background
+            landcolor="rgba(230,230,230,1)",  # Light gray land
+            lakecolor="rgba(200,230,255,1)",  # Light blue lakes
+            oceancolor="rgba(200,230,255,1)",  # Light blue ocean
+            subunitcolor="rgba(100,100,100,0.5)",  # Gray borders
+            subunitwidth=0.5,
+            countrycolor="rgba(100,100,100,0.5)",  # Gray country borders
+            countrywidth=0.5,
+            showcountries=True,
+            coastlinewidth=0.5,
+            # Center on Africa with appropriate projection
+            center=dict(lat=8, lon=20),
+            projection_scale=1.2,
+            scope="africa",
+        ),
+        margin={"r": 0, "t": 40, "l": 0, "b": 40},
+        coloraxis_colorbar=dict(thickness=15, len=0.75, yanchor="middle", y=0.5),
+    )
 
-    except Exception as e:
-        st.error(f"Error creating choropleth map: {e}")
-        # Return an empty figure or a message figure
-        fig = go.Figure()
-        fig.update_layout(
-            title_text=f"{title} (Plotting Error)",
-            height=height,
-            width=width,
-            annotations=[dict(text=f"Error: {e}", showarrow=False)]
-        )
-        return fig
+    # Adjust view to include all island states
+    fig.update_geos(
+        lataxis_range=[-35, 38],  # Extended south for islands
+        lonaxis_range=[-25, 60],  # Wider longitudinal range
+    )
+
+    # UN Disclaimer
+    fig.add_annotation(
+        x=0.5,
+        y=-0.05,
+        xref="paper",
+        yref="paper",
+        text="The boundaries and names shown and the designations used on this map do not imply official endorsement or acceptance by the United Nations.",
+        showarrow=False,
+        font=dict(size=10, color="gray"),
+        align="center",
+    )
+
+    return fig
+
 
 def create_line_chart(
     data,
     x_column,
     y_column,
     color_column=None,
-    title='Line Chart',
+    title="Line Chart",
     x_label=None,
     y_label=None,
     legend_title=None,
     height=400,
-    width=None
+    width=None,
 ):
     """
     Creates an interactive line chart using Plotly Express.
@@ -412,7 +416,7 @@ def create_line_chart(
             width=width,
             xaxis_title=x_label or x_column,
             yaxis_title=y_label or y_column,
-            annotations=[dict(text="No data available", showarrow=False)]
+            annotations=[dict(text="No data available", showarrow=False)],
         )
         return fig
 
@@ -423,21 +427,25 @@ def create_line_chart(
     missing_cols = [col for col in required_cols if col not in data.columns]
     if missing_cols:
         st.error(f"Missing required columns for line chart: {', '.join(missing_cols)}")
-        fig = go.Figure().update_layout(title_text=f"{title} (Error: Missing Columns)", height=height, width=width)
+        fig = go.Figure().update_layout(
+            title_text=f"{title} (Error: Missing Columns)", height=height, width=width
+        )
         return fig
 
     # Convert y_column to numeric, coercing errors
-    data[y_column] = pd.to_numeric(data[y_column], errors='coerce')
+    data[y_column] = pd.to_numeric(data[y_column], errors="coerce")
     # Optional: Convert x_column if it's supposed to be numeric/datetime
     # data[x_column] = pd.to_numeric(data[x_column], errors='coerce') # If x is year/numeric
     # data[x_column] = pd.to_datetime(data[x_column], errors='coerce') # If x is date
 
-    plot_data = data.dropna(subset=[y_column]) # Remove rows where y-value is invalid
+    plot_data = data.dropna(subset=[y_column])  # Remove rows where y-value is invalid
 
     if plot_data.empty:
-         st.warning("No valid numeric data to plot after cleaning.")
-         fig = go.Figure().update_layout(title_text=f"{title} (No Valid Data)", height=height, width=width)
-         return fig
+        st.warning("No valid numeric data to plot after cleaning.")
+        fig = go.Figure().update_layout(
+            title_text=f"{title} (No Valid Data)", height=height, width=width
+        )
+        return fig
 
     try:
         fig = px.line(
@@ -447,20 +455,24 @@ def create_line_chart(
             color=color_column,
             title=title,
             labels={
-                x_column: x_label or x_column.replace('_', ' ').title(),
-                y_column: y_label or y_column.replace('_', ' ').title(),
-                color_column: legend_title or (color_column.replace('_', ' ').title() if color_column else None)
+                x_column: x_label or x_column.replace("_", " ").title(),
+                y_column: y_label or y_column.replace("_", " ").title(),
+                color_column: legend_title
+                or (color_column.replace("_", " ").title() if color_column else None),
             },
-            markers=True # Add markers to the lines
+            markers=True,  # Add markers to the lines
         )
 
         fig.update_layout(
             height=height,
             width=width,
-            legend_title_text=legend_title or (color_column.replace('_', ' ').title() if color_column else ''),
-            xaxis=dict(type='category') if data[x_column].dtype == 'object' else None # Treat x as category if object type
+            legend_title_text=legend_title
+            or (color_column.replace("_", " ").title() if color_column else ""),
+            xaxis=(
+                dict(type="category") if data[x_column].dtype == "object" else None
+            ),  # Treat x as category if object type
         )
-        fig.update_traces(marker=dict(size=6)) # Adjust marker size
+        fig.update_traces(marker=dict(size=6))  # Adjust marker size
 
         return fig
 
@@ -471,37 +483,44 @@ def create_line_chart(
             title_text=f"{title} (Plotting Error)",
             height=height,
             width=width,
-            annotations=[dict(text=f"Error: {e}", showarrow=False)]
+            annotations=[dict(text=f"Error: {e}", showarrow=False)],
         )
         return fig
+
 
 def create_bar_chart(
     data,
     x_column=None,
     y_column=None,
     color_column=None,
-    title='Bar Chart',
+    title="Bar Chart",
     x_label=None,
     y_label=None,
     legend_title=None,
-    orientation='v', # 'v' for vertical, 'h' for horizontal
+    orientation="v",  # 'v' for vertical, 'h' for horizontal
     height=400,
     width=None,
-    **kwargs
+    **kwargs,
 ):
     """
     Creates an interactive bar chart using Plotly Express.
     """
     if data is None or data.empty:
         st.warning("No data provided for bar chart.")
-        fig = go.Figure().update_layout(title_text=f"{title} (No Data)", height=height, width=width)
+        fig = go.Figure().update_layout(
+            title_text=f"{title} (No Data)", height=height, width=width
+        )
         return fig
 
     # Try to get x_axis and y_axis from arguments or kwargs
-    x_axis = x_column or kwargs.get('x', None)
-    y_axis = y_column or kwargs.get('y', None)
+    x_axis = x_column or kwargs.get("x", None)
+    y_axis = y_column or kwargs.get("y", None)
     if x_axis is None or y_axis is None:
-        raise ValueError("Both x_axis and y_axis must be provided to create_bar_chart. Got x_axis={} y_axis={}".format(x_axis, y_axis))
+        raise ValueError(
+            "Both x_axis and y_axis must be provided to create_bar_chart. Got x_axis={} y_axis={}".format(
+                x_axis, y_axis
+            )
+        )
 
     # Ensure essential columns exist
     required_cols = [x_axis, y_axis]
@@ -510,21 +529,25 @@ def create_bar_chart(
     missing_cols = [col for col in required_cols if col not in data.columns]
     if missing_cols:
         st.error(f"Missing required columns for bar chart: {', '.join(missing_cols)}")
-        fig = go.Figure().update_layout(title_text=f"{title} (Error: Missing Columns)", height=height, width=width)
+        fig = go.Figure().update_layout(
+            title_text=f"{title} (Error: Missing Columns)", height=height, width=width
+        )
         return fig
 
     # Determine axes based on orientation
-    if orientation == 'h':
+    if orientation == "h":
         x_axis, y_axis = y_axis, x_axis
     # Convert the value axis to numeric
-    value_axis = x_axis if orientation == 'h' else y_axis
-    data[value_axis] = pd.to_numeric(data[value_axis], errors='coerce')
+    value_axis = x_axis if orientation == "h" else y_axis
+    data[value_axis] = pd.to_numeric(data[value_axis], errors="coerce")
     plot_data = data.dropna(subset=[value_axis])
 
     if plot_data.empty:
-         st.warning("No valid numeric data to plot after cleaning.")
-         fig = go.Figure().update_layout(title_text=f"{title} (No Valid Data)", height=height, width=width)
-         return fig
+        st.warning("No valid numeric data to plot after cleaning.")
+        fig = go.Figure().update_layout(
+            title_text=f"{title} (No Valid Data)", height=height, width=width
+        )
+        return fig
 
     try:
         fig = px.bar(
@@ -535,21 +558,23 @@ def create_bar_chart(
             title=title,
             orientation=orientation,
             labels={
-                x_axis: x_label or x_axis.replace('_', ' ').title(),
-                y_axis: y_label or y_axis.replace('_', ' ').title(),
-                color_column: legend_title or (color_column.replace('_', ' ').title() if color_column else None)
+                x_axis: x_label or x_axis.replace("_", " ").title(),
+                y_axis: y_label or y_axis.replace("_", " ").title(),
+                color_column: legend_title
+                or (color_column.replace("_", " ").title() if color_column else None),
             },
-            text_auto='.2f' # Display values on bars, formatted
+            text_auto=".2f",  # Display values on bars, formatted
         )
 
         fig.update_layout(
             height=height,
             width=width,
-            legend_title_text=legend_title or (color_column.replace('_', ' ').title() if color_column else ''),
-            xaxis_title=x_label or x_axis.replace('_', ' ').title(),
-            yaxis_title=y_label or y_axis.replace('_', ' ').title(),
+            legend_title_text=legend_title
+            or (color_column.replace("_", " ").title() if color_column else ""),
+            xaxis_title=x_label or x_axis.replace("_", " ").title(),
+            yaxis_title=y_label or y_axis.replace("_", " ").title(),
         )
-        fig.update_traces(textposition='outside')
+        fig.update_traces(textposition="outside")
 
         return fig
 
@@ -560,11 +585,13 @@ def create_bar_chart(
             title_text=f"{title} (Plotting Error)",
             height=height,
             width=width,
-            annotations=[dict(text=f"Error: {e}", showarrow=False)]
+            annotations=[dict(text=f"Error: {e}", showarrow=False)],
         )
         return fig
 
+
 # 2. Data handling functions:
+
 
 def load_country_reference_data(file_path=None):
     """
@@ -579,9 +606,11 @@ def load_country_reference_data(file_path=None):
     """
     # Define potential default paths relative to this script or a known location
     default_paths = [
-        "data/iso3_country_reference.csv", # Primary expected location
-        "../data/iso3_country_reference.csv", # If called from pages/
-        Path(__file__).parent.parent / "data" / "iso3_country_reference.csv" # Relative to this file's location
+        "data/iso3_country_reference.csv",  # Primary expected location
+        "../data/iso3_country_reference.csv",  # If called from pages/
+        Path(__file__).parent.parent
+        / "data"
+        / "iso3_country_reference.csv",  # Relative to this file's location
     ]
 
     if file_path:
@@ -599,28 +628,33 @@ def load_country_reference_data(file_path=None):
             if path_obj.is_file():
                 ref_data = pd.read_csv(path_obj)
                 loaded_path = path_obj
-                break # Stop after successful load
+                break  # Stop after successful load
         except Exception as e:
             st.error(f"Error loading reference data from {p}: {e}")
             continue
 
     if ref_data is None:
-        st.error(f"Could not find or load country reference data. Tried paths: {[str(p) for p in paths_to_try]}")
+        st.error(
+            f"Could not find or load country reference data. Tried paths: {[str(p) for p in paths_to_try]}"
+        )
         return pd.DataFrame()
 
     # Ensure essential columns exist
-    required_ref_cols = ['Region Name', 'Country or Area', 'iso3']
+    required_ref_cols = ["Region Name", "Country or Area", "iso3"]
     missing_cols = [col for col in required_ref_cols if col not in ref_data.columns]
     if missing_cols:
-         st.warning(f"Reference data loaded from {loaded_path} is missing expected columns: {missing_cols}. Expected: {required_ref_cols}. Found: {list(ref_data.columns)}")
+        st.warning(
+            f"Reference data loaded from {loaded_path} is missing expected columns: {missing_cols}. Expected: {required_ref_cols}. Found: {list(ref_data.columns)}"
+        )
 
     # Optional: Fill missing regions if necessary
-    if 'Region Name' in ref_data.columns:
-        ref_data['Region Name'] = ref_data['Region Name'].fillna('Unknown')
+    if "Region Name" in ref_data.columns:
+        ref_data["Region Name"] = ref_data["Region Name"].fillna("Unknown")
 
     return ref_data
 
-@st.cache_data # Cache the filtered result
+
+@st.cache_data  # Cache the filtered result
 def filter_dataframe_by_selections(df, filters, ref_data):
     """
     Filters the main dataframe based on selections from setup_sidebar_filters,
@@ -641,81 +675,131 @@ def filter_dataframe_by_selections(df, filters, ref_data):
         return pd.DataFrame()
 
     # Ensure ref_data has the necessary columns ('Region Name', 'Country or Area')
-    if ref_data is None or ref_data.empty or 'Region Name' not in ref_data.columns or 'Country or Area' not in ref_data.columns:
-         st.warning("Reference data is missing or incomplete ('Region Name', 'Country or Area' columns). Skipping regional filtering/aggregation.")
-         # Fallback to just year filtering if ref_data is bad
-         filtered_df = df.copy()
-         start_year, end_year = filters.get('year_range', (df['year'].min(), df['year'].max()))
-         if start_year is not None and end_year is not None:
-             filtered_df = filtered_df[(filtered_df['year'] >= start_year) & (filtered_df['year'] <= end_year)]
-         return filtered_df
+    if (
+        ref_data is None
+        or ref_data.empty
+        or "Region Name" not in ref_data.columns
+        or "Country or Area" not in ref_data.columns
+    ):
+        st.warning(
+            "Reference data is missing or incomplete ('Region Name', 'Country or Area' columns). Skipping regional filtering/aggregation."
+        )
+        # Fallback to just year filtering if ref_data is bad
+        filtered_df = df.copy()
+        start_year, end_year = filters.get(
+            "year_range", (df["year"].min(), df["year"].max())
+        )
+        if start_year is not None and end_year is not None:
+            filtered_df = filtered_df[
+                (filtered_df["year"] >= start_year) & (filtered_df["year"] <= end_year)
+            ]
+        return filtered_df
 
     # Make a copy to avoid modifying the original DataFrame
     df_processed = df.copy()
 
     # Extract filter values
-    selected_countries_or_aggregates = filters.get('selected_countries', [])
-    year_range = filters.get('year_range', (None, None))
+    selected_countries_or_aggregates = filters.get("selected_countries", [])
+    year_range = filters.get("year_range", (None, None))
     start_year, end_year = year_range
 
     # Separate individual countries and regional aggregate requests
-    individual_countries = [c for c in selected_countries_or_aggregates if not c.endswith(" (Region Average)")]
-    region_aggregate_labels = [c for c in selected_countries_or_aggregates if c.endswith(" (Region Average)")]
+    individual_countries = [
+        c
+        for c in selected_countries_or_aggregates
+        if not c.endswith(" (Region Average)")
+    ]
+    region_aggregate_labels = [
+        c for c in selected_countries_or_aggregates if c.endswith(" (Region Average)")
+    ]
 
-    results_dfs = [] # To store results for concatenation
+    results_dfs = []  # To store results for concatenation
 
     # --- 1. Filter by Year Range (apply to all further processing) ---
     if start_year is not None and end_year is not None:
-        df_processed = df_processed[(df_processed['year'] >= start_year) & (df_processed['year'] <= end_year)]
+        df_processed = df_processed[
+            (df_processed["year"] >= start_year) & (df_processed["year"] <= end_year)
+        ]
     elif start_year is not None:
-        df_processed = df_processed[df_processed['year'] >= start_year]
+        df_processed = df_processed[df_processed["year"] >= start_year]
     elif end_year is not None:
-        df_processed = df_processed[df_processed['year'] <= end_year]
+        df_processed = df_processed[df_processed["year"] <= end_year]
 
     # --- Handle Empty Selection Case ---
     # If no specific countries or regional averages are selected, return the year-filtered data for all relevant countries
     # (This depends on whether a specific region was selected in the first dropdown)
     if not individual_countries and not region_aggregate_labels:
-        selected_region = filters.get('selected_region')
+        selected_region = filters.get("selected_region")
         if selected_region == "All Regions" or selected_region is None:
             # If All Regions, return the fully year-filtered data
             return df_processed
         else:
             # If a specific region was selected, filter df_processed by that region
-            countries_in_region = ref_data[ref_data['Region Name'] == selected_region]['Country or Area'].unique().tolist()
-            country_col_in_df = 'country_or_area' if 'country_or_area' in df_processed.columns else 'Country'
+            countries_in_region = (
+                ref_data[ref_data["Region Name"] == selected_region]["Country or Area"]
+                .unique()
+                .tolist()
+            )
+            country_col_in_df = (
+                "country_or_area"
+                if "country_or_area" in df_processed.columns
+                else "Country"
+            )
             if country_col_in_df in df_processed.columns and countries_in_region:
-                return df_processed[df_processed[country_col_in_df].isin(countries_in_region)].copy()
+                return df_processed[
+                    df_processed[country_col_in_df].isin(countries_in_region)
+                ].copy()
             else:
                 # If filtering by region fails (missing col or no countries), return the year-filtered data as fallback
-                 st.warning(f"Could not filter by selected region '{selected_region}' due to missing data/column. Showing all regions.")
-                 return df_processed
+                st.warning(
+                    f"Could not filter by selected region '{selected_region}' due to missing data/column. Showing all regions."
+                )
+                return df_processed
 
     # --- 2. Process Individual Country Selections ---
     if individual_countries:
         # Determine the correct country column name in the main df
-        country_col_in_df = 'country_or_area' if 'country_or_area' in df_processed.columns else 'Country' # Use 'Country' as fallback
+        country_col_in_df = (
+            "country_or_area"
+            if "country_or_area" in df_processed.columns
+            else "Country"
+        )  # Use 'Country' as fallback
         if country_col_in_df in df_processed.columns:
-            df_individual = df_processed[df_processed[country_col_in_df].isin(individual_countries)].copy()
+            df_individual = df_processed[
+                df_processed[country_col_in_df].isin(individual_countries)
+            ].copy()
             if not df_individual.empty:
                 results_dfs.append(df_individual)
         else:
-             # If neither standard column name is found
-             st.warning(f"Could not find a suitable country column ('country_or_area' or 'Country') in main data for filtering individual countries.")
-
+            # If neither standard column name is found
+            st.warning(
+                f"Could not find a suitable country column ('country_or_area' or 'Country') in main data for filtering individual countries."
+            )
 
     # --- 3. Process Regional Aggregate Selections ---
     if region_aggregate_labels:
-        required_value_col = 'value' # Column to aggregate
-        grouping_cols = ['year', 'indicator_label']
-        country_col_in_df = 'country_or_area' if 'country_or_area' in df_processed.columns else 'Country'
+        required_value_col = "value"  # Column to aggregate
+        grouping_cols = ["year", "indicator_label"]
+        country_col_in_df = (
+            "country_or_area"
+            if "country_or_area" in df_processed.columns
+            else "Country"
+        )
         for region_label in region_aggregate_labels:
             region_name = region_label.replace(" (Region Average)", "")
-            countries_in_region = ref_data[ref_data['Region Name'] == region_name]['Country or Area'].unique().tolist()
-            region_df = df_processed[df_processed[country_col_in_df].isin(countries_in_region)]
+            countries_in_region = (
+                ref_data[ref_data["Region Name"] == region_name]["Country or Area"]
+                .unique()
+                .tolist()
+            )
+            region_df = df_processed[
+                df_processed[country_col_in_df].isin(countries_in_region)
+            ]
             if not region_df.empty and required_value_col in region_df.columns:
                 # Group by year, indicator, and calculate mean
-                agg_df = region_df.groupby(['year', 'indicator_label'], as_index=False)[required_value_col].mean()
+                agg_df = region_df.groupby(["year", "indicator_label"], as_index=False)[
+                    required_value_col
+                ].mean()
                 agg_df[country_col_in_df] = region_label
                 results_dfs.append(agg_df)
 
@@ -726,10 +810,12 @@ def filter_dataframe_by_selections(df, filters, ref_data):
     else:
         # Concatenate all results
         final_df = pd.concat(results_dfs, ignore_index=True, sort=False)
-         # Ensure final DataFrame has columns in roughly the same order as original (optional)
-        cols_ordered = [col for col in df.columns if col in final_df.columns] + \
-                       [col for col in final_df.columns if col not in df.columns]
+        # Ensure final DataFrame has columns in roughly the same order as original (optional)
+        cols_ordered = [col for col in df.columns if col in final_df.columns] + [
+            col for col in final_df.columns if col not in df.columns
+        ]
         return final_df[cols_ordered]
+
 
 def find_indicators_in_data(df, indicator_patterns=None, fuzzy_match=False):
     """
@@ -747,12 +833,18 @@ def find_indicators_in_data(df, indicator_patterns=None, fuzzy_match=False):
                       or a dict mapping categories to lists of found indicators.
                       Returns empty list/dict if 'indicator_label' column is missing.
     """
-    if 'indicator_label' not in df.columns:
+    if "indicator_label" not in df.columns:
         st.error("Column 'indicator_label' not found in DataFrame.")
-        return [] if isinstance(indicator_patterns, list) or indicator_patterns is None else {}
+        return (
+            []
+            if isinstance(indicator_patterns, list) or indicator_patterns is None
+            else {}
+        )
 
-    available_indicators = df['indicator_label'].dropna().unique()
-    found_indicators = [] if isinstance(indicator_patterns, list) or indicator_patterns is None else {}
+    available_indicators = df["indicator_label"].dropna().unique()
+    found_indicators = (
+        [] if isinstance(indicator_patterns, list) or indicator_patterns is None else {}
+    )
 
     if indicator_patterns is None:
         # If no patterns provided, return all unique indicators found
@@ -777,16 +869,16 @@ def find_indicators_in_data(df, indicator_patterns=None, fuzzy_match=False):
                 #     found_indicators.extend(matches)
                 # except re.error:
                 #     st.warning(f"Invalid regex pattern skipped: {pattern}")
-                pass # Keep it simple for now, exact match or direct list item check
-        found_indicators = sorted(list(set(found_indicators))) # Unique and sorted
+                pass  # Keep it simple for now, exact match or direct list item check
+        found_indicators = sorted(list(set(found_indicators)))  # Unique and sorted
 
     elif isinstance(indicator_patterns, dict):
         for category, patterns in indicator_patterns.items():
             category_matches = []
             for pattern in patterns:
-                 if pattern in available_indicators:
-                     category_matches.append(pattern)
-                 # Optional: Regex matching per category
+                if pattern in available_indicators:
+                    category_matches.append(pattern)
+                # Optional: Regex matching per category
             found_indicators[category] = sorted(list(set(category_matches)))
     else:
         st.error("Invalid 'indicator_patterns' format. Must be a list or dictionary.")
@@ -794,10 +886,13 @@ def find_indicators_in_data(df, indicator_patterns=None, fuzzy_match=False):
 
     return found_indicators
 
-def add_country_coordinates(df, ref_df, country_col='country_or_area', iso_col='iso3'):
+
+def add_country_coordinates(df, ref_df, country_col="country_or_area", iso_col="iso3"):
     """Adds latitude and longitude from a reference dataframe."""
     # Ensure reference dataframe has coordinates and necessary keys
-    if ref_df is None or not all(c in ref_df.columns for c in ['iso3', 'Latitude', 'Longitude']):
+    if ref_df is None or not all(
+        c in ref_df.columns for c in ["iso3", "Latitude", "Longitude"]
+    ):
         print("Reference dataframe missing required columns: iso3, Latitude, Longitude")
         return df
 
@@ -806,7 +901,11 @@ def add_country_coordinates(df, ref_df, country_col='country_or_area', iso_col='
         return df
 
     # Prepare the mapping dictionary {iso3: (lat, lon)}
-    coord_map = ref_df.set_index('iso3')[['Latitude', 'Longitude']].apply(tuple, axis=1).to_dict()
+    coord_map = (
+        ref_df.set_index("iso3")[["Latitude", "Longitude"]]
+        .apply(tuple, axis=1)
+        .to_dict()
+    )
 
     # Function to apply mapping
     def get_coords(row):
@@ -818,35 +917,52 @@ def add_country_coordinates(df, ref_df, country_col='country_or_area', iso_col='
         return (None, None)
 
     # Apply mapping to get coordinates
-    coords = df.apply(get_coords, axis=1, result_type='expand')
-    df['latitude'] = coords[0]
-    df['longitude'] = coords[1]
+    coords = df.apply(get_coords, axis=1, result_type="expand")
+    df["latitude"] = coords[0]
+    df["longitude"] = coords[1]
 
     return df
 
-def generate_placeholder_data(base_value=10.0, trend=0.1, noise=0.5, years=range(2010, 2024), countries=['Country A', 'Country B', 'Country C']):
+
+def generate_placeholder_data(
+    base_value=10.0,
+    trend=0.1,
+    noise=0.5,
+    years=range(2010, 2024),
+    countries=["Country A", "Country B", "Country C"],
+):
     """Generates placeholder data for charts when real data is missing."""
     data = []
     for country in countries:
-        value = base_value + random.uniform(-2, 2) # Start near base
+        value = base_value + random.uniform(-2, 2)  # Start near base
         for year in years:
             value += trend * random.uniform(0.5, 1.5) + random.gauss(0, noise)
-            data.append({'country_or_area': country, 'year': year, 'value': round(max(0, value), 2)}) # Ensure non-negative
+            data.append(
+                {
+                    "country_or_area": country,
+                    "year": year,
+                    "value": round(max(0, value), 2),
+                }
+            )  # Ensure non-negative
     placeholder_df = pd.DataFrame(data)
     # Add iso3 code if possible (using simplified mapping here)
-    country_to_iso = {name: f"P{i+1:03}" for i, name in enumerate(countries)} # Placeholder ISO
-    placeholder_df['iso3'] = placeholder_df['country_or_area'].map(country_to_iso)
+    country_to_iso = {
+        name: f"P{i+1:03}" for i, name in enumerate(countries)
+    }  # Placeholder ISO
+    placeholder_df["iso3"] = placeholder_df["country_or_area"].map(country_to_iso)
     return placeholder_df
+
 
 # 3. UI component functions:
 
+
 def create_country_selector(
     df,
-    country_column='country',
+    country_column="country",
     sidebar=True,
     max_selections=10,
     key=None,
-    default_all=False
+    default_all=False,
 ):
     """
     Create a multi-select widget for selecting countries
@@ -886,14 +1002,14 @@ def create_country_selector(
             "Select Countries",
             options=options,
             default=default,
-            key=key or "country_selector"
+            key=key or "country_selector",
         )
     else:
         selected = st.multiselect(
             "Select Countries",
             options=options,
             default=default,
-            key=key or "country_selector"
+            key=key or "country_selector",
         )
 
     # If "All Countries" is selected, return all countries
@@ -910,6 +1026,7 @@ def create_country_selector(
 
     return selected
 
+
 def render_indicator_section(
     df,
     indicator_label=None,
@@ -921,7 +1038,7 @@ def render_indicator_section(
     chart_options=None,
     fallback_function=None,
     show_data_table=True,
-    container_key=None
+    container_key=None,
 ):
     """
     Renders a standard section for displaying an indicator, including title,
@@ -942,9 +1059,11 @@ def render_indicator_section(
     """
     # Use a unique container key if provided, otherwise generate one based on title/label
     if container_key is None:
-        container_key = f"container_{title or indicator_label or random.randint(1000, 9999)}".replace(" ", "_")
+        container_key = f"container_{title or indicator_label or random.randint(1000, 9999)}".replace(
+            " ", "_"
+        )
 
-    with st.container(): # Use container for better layout control
+    with st.container():  # Use container for better layout control
         # --- Title and Description ---
         section_title = title or indicator_label or "Indicator Analysis"
         st.subheader(section_title)
@@ -952,126 +1071,165 @@ def render_indicator_section(
         if description:
             st.markdown(description)
         elif indicator_label:
-             # Attempt to get metadata if no explicit description given
-             meta_desc = get_indicator_metadata(indicator_label)
-             if meta_desc != "No description available for this indicator.":
-                 st.markdown(meta_desc)
+            # Attempt to get metadata if no explicit description given
+            meta_desc = get_indicator_metadata(indicator_label)
+            if meta_desc != "No description available for this indicator.":
+                st.markdown(meta_desc)
 
         # --- Prepare Data ---
         data_to_plot = pd.DataFrame()
         indicator_found = False
 
-        if indicator_label and indicator_label in df['indicator_label'].unique():
-            data_to_plot = df[df['indicator_label'] == indicator_label].copy()
+        if indicator_label and indicator_label in df["indicator_label"].unique():
+            data_to_plot = df[df["indicator_label"] == indicator_label].copy()
             indicator_found = True
 
         # If indicator not found or explicitly using fallback
         if not indicator_found and fallback_function:
-            st.info(f"Indicator '{indicator_label}' not found directly, attempting to use fallback function.")
+            st.info(
+                f"Indicator '{indicator_label}' not found directly, attempting to use fallback function."
+            )
             try:
                 data_to_plot = fallback_function()
                 if data_to_plot is None or data_to_plot.empty:
-                     st.warning("Fallback function did not return valid data.")
-                     return # Stop processing this section
+                    st.warning("Fallback function did not return valid data.")
+                    return  # Stop processing this section
                 st.info("Using data generated by fallback function.")
             except Exception as e:
                 st.error(f"Error executing fallback function: {e}")
-                return # Stop processing this section
+                return  # Stop processing this section
 
         # If still no data after trying indicator and fallback
         if data_to_plot.empty:
             st.warning(f"No data available for indicator: '{indicator_label or 'N/A'}'")
             # Placeholder empty chart
             fig = go.Figure()
-            fig.update_layout(title_text=f"{section_title} (No Data Available)", height=300)
-            fig.add_annotation(text="No data found for this indicator and selection.",
-                               xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False)
+            fig.update_layout(
+                title_text=f"{section_title} (No Data Available)", height=300
+            )
+            fig.add_annotation(
+                text="No data found for this indicator and selection.",
+                xref="paper",
+                yref="paper",
+                x=0.5,
+                y=0.5,
+                showarrow=False,
+            )
             st.plotly_chart(fig, use_container_width=True)
             return
 
         # Apply filters (Year Range and Countries)
-        if year_range and 'year' in data_to_plot.columns:
+        if year_range and "year" in data_to_plot.columns:
             min_year, max_year = year_range
             # Ensure year is numeric before filtering
-            data_to_plot['year'] = pd.to_numeric(data_to_plot['year'], errors='coerce')
-            data_to_plot = data_to_plot.dropna(subset=['year'])
+            data_to_plot["year"] = pd.to_numeric(data_to_plot["year"], errors="coerce")
+            data_to_plot = data_to_plot.dropna(subset=["year"])
             data_to_plot = data_to_plot[
-                (data_to_plot['year'] >= min_year) & (data_to_plot['year'] <= max_year)
+                (data_to_plot["year"] >= min_year) & (data_to_plot["year"] <= max_year)
             ]
 
-        if selected_countries and 'country_or_area' in data_to_plot.columns:
-             # Ensure selected_countries isn't the "All" placeholder if used
-             if "All African Countries" not in selected_countries:
-                data_to_plot = data_to_plot[data_to_plot['country_or_area'].isin(selected_countries)]
-        elif selected_countries and 'iso3' in data_to_plot.columns:
-             # Fallback to iso3 if country_or_area missing but iso3 present
-             if "All African Countries" not in selected_countries:
-                 # Need a way to map selected country names back to iso3 codes maybe?
-                 # This part might need adjustment based on how selected_countries are stored
-                 # Assuming selected_countries are names, need ref_data here ideally.
-                 # For now, we skip this filtering if direct country_or_area isn't available.
-                 st.warning("Country filtering skipped: 'country_or_area' column missing, direct ISO3 mapping not implemented here.")
-
+        if selected_countries and "country_or_area" in data_to_plot.columns:
+            # Ensure selected_countries isn't the "All" placeholder if used
+            if "All African Countries" not in selected_countries:
+                data_to_plot = data_to_plot[
+                    data_to_plot["country_or_area"].isin(selected_countries)
+                ]
+        elif selected_countries and "iso3" in data_to_plot.columns:
+            # Fallback to iso3 if country_or_area missing but iso3 present
+            if "All African Countries" not in selected_countries:
+                # Need a way to map selected country names back to iso3 codes maybe?
+                # This part might need adjustment based on how selected_countries are stored
+                # Assuming selected_countries are names, need ref_data here ideally.
+                # For now, we skip this filtering if direct country_or_area isn't available.
+                st.warning(
+                    "Country filtering skipped: 'country_or_area' column missing, direct ISO3 mapping not implemented here."
+                )
 
         # Check again if data remains after filtering
         if data_to_plot.empty:
-            st.warning(f"No data available for '{indicator_label or 'N/A'}' after applying filters (Years: {year_range}, Countries: {len(selected_countries) if selected_countries else 'All'}).")
+            st.warning(
+                f"No data available for '{indicator_label or 'N/A'}' after applying filters (Years: {year_range}, Countries: {len(selected_countries) if selected_countries else 'All'})."
+            )
             # Placeholder chart
             fig = go.Figure()
-            fig.update_layout(title_text=f"{section_title} (No Data for Selection)", height=300)
-            fig.add_annotation(text="No data matches the current filter criteria.",
-                               xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False)
+            fig.update_layout(
+                title_text=f"{section_title} (No Data for Selection)", height=300
+            )
+            fig.add_annotation(
+                text="No data matches the current filter criteria.",
+                xref="paper",
+                yref="paper",
+                x=0.5,
+                y=0.5,
+                showarrow=False,
+            )
             st.plotly_chart(fig, use_container_width=True)
             return
 
         # --- Create Chart ---
         chart_options = chart_options or {}
-        x_col = chart_options.get('x', 'year' if chart_type == 'line' else 'country_or_area')
-        y_col = chart_options.get('y', 'value')
-        color_col = chart_options.get('color') # Get color if specified
+        x_col = chart_options.get(
+            "x", "year" if chart_type == "line" else "country_or_area"
+        )
+        y_col = chart_options.get("y", "value")
+        color_col = chart_options.get("color")  # Get color if specified
 
         # Ensure required columns exist for the chosen chart type
         required_chart_cols = [x_col, y_col]
         if color_col:
             required_chart_cols.append(color_col)
         if not all(col in data_to_plot.columns for col in required_chart_cols):
-            st.error(f"Missing columns required for '{chart_type}' chart ({required_chart_cols}). Available: {list(data_to_plot.columns)}")
+            st.error(
+                f"Missing columns required for '{chart_type}' chart ({required_chart_cols}). Available: {list(data_to_plot.columns)}"
+            )
             return
 
         # Dynamically choose the plotting function based on chart_type
-        plot_df = data_to_plot # Default to using the fully filtered data
+        plot_df = data_to_plot  # Default to using the fully filtered data
 
         if chart_type == "line":
             fig = create_line_chart(
-                plot_df, # Use plot_df
+                plot_df,  # Use plot_df
                 x_column=x_col,
                 y_column=y_col,
                 color_column=color_col,
-                title="", # Title is handled by st.subheader
-                **chart_options.get('kwargs', {}) # Pass extra kwargs
+                title="",  # Title is handled by st.subheader
+                **chart_options.get("kwargs", {}),  # Pass extra kwargs
             )
         elif chart_type == "bar":
-             # For bar charts, only show latest year if x is country AND color is NOT specified
-            if x_col == 'country_or_area' and 'year' in data_to_plot.columns and color_col is None:
-                 try:
-                     latest_data = data_to_plot.loc[data_to_plot.groupby('country_or_area')['year'].idxmax()]
-                     plot_df = latest_data # Use only latest data in this specific case
-                 except Exception as e:
-                     st.warning(f"Could not determine latest year for bar chart: {e}. Using all available data.")
-                     # Keep plot_df as data_to_plot if finding latest fails
+            # For bar charts, only show latest year if x is country AND color is NOT specified
+            if (
+                x_col == "country_or_area"
+                and "year" in data_to_plot.columns
+                and color_col is None
+            ):
+                try:
+                    latest_data = data_to_plot.loc[
+                        data_to_plot.groupby("country_or_area")["year"].idxmax()
+                    ]
+                    plot_df = latest_data  # Use only latest data in this specific case
+                except Exception as e:
+                    st.warning(
+                        f"Could not determine latest year for bar chart: {e}. Using all available data."
+                    )
+                    # Keep plot_df as data_to_plot if finding latest fails
 
             fig = create_bar_chart(
-                plot_df, # Use potentially modified plot_df
+                plot_df,  # Use potentially modified plot_df
                 x_column=x_col,
                 y_column=y_col,
-                color_column=color_col, # Pass color_col for potential stacking
+                color_column=color_col,  # Pass color_col for potential stacking
                 title="",
-                **chart_options.get('kwargs', {})
+                **chart_options.get("kwargs", {}),
             )
         else:
-            st.warning(f"Chart type '{chart_type}' not explicitly supported in render_indicator_section. Add specific logic or use a default.")
+            st.warning(
+                f"Chart type '{chart_type}' not explicitly supported in render_indicator_section. Add specific logic or use a default."
+            )
             # Default fallback or error
-            fig = go.Figure().update_layout(title_text="Unsupported Chart Type", height=300)
+            fig = go.Figure().update_layout(
+                title_text="Unsupported Chart Type", height=300
+            )
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -1079,12 +1237,15 @@ def render_indicator_section(
         if show_data_table:
             with st.expander("View Data Table"):
                 # Show relevant columns, potentially rename for clarity
-                cols_to_show = ['country_or_area', 'year', 'value']
-                display_df = data_to_plot[[col for col in cols_to_show if col in data_to_plot.columns]].copy()
+                cols_to_show = ["country_or_area", "year", "value"]
+                display_df = data_to_plot[
+                    [col for col in cols_to_show if col in data_to_plot.columns]
+                ].copy()
                 # Rename 'value' to the indicator label if possible
-                if indicator_label and 'value' in display_df.columns:
-                    display_df = display_df.rename(columns={'value': indicator_label})
+                if indicator_label and "value" in display_df.columns:
+                    display_df = display_df.rename(columns={"value": indicator_label})
                 st.dataframe(display_df)
+
 
 def render_indicator_map(
     df,
@@ -1096,7 +1257,7 @@ def render_indicator_map(
     year_range=None,
     map_options=None,
     fallback_function=None,
-    container_key=None
+    container_key=None,
 ):
     """
     Renders a standard section for displaying an indicator as a choropleth map.
@@ -1114,7 +1275,9 @@ def render_indicator_map(
         container_key (str, optional): Unique key for Streamlit elements.
     """
     if container_key is None:
-        container_key = f"map_container_{title or indicator_label or random.randint(1000, 9999)}".replace(" ", "_")
+        container_key = f"map_container_{title or indicator_label or random.randint(1000, 9999)}".replace(
+            " ", "_"
+        )
 
     with st.container():
         # --- Title and Description ---
@@ -1124,9 +1287,9 @@ def render_indicator_map(
         if description:
             st.markdown(description)
         elif indicator_label:
-             meta_desc = get_indicator_metadata(indicator_label)
-             if meta_desc != "No description available for this indicator.":
-                 st.markdown(meta_desc)
+            meta_desc = get_indicator_metadata(indicator_label)
+            if meta_desc != "No description available for this indicator.":
+                st.markdown(meta_desc)
 
         if reference_data is None or reference_data.empty:
             st.error("Reference data with country codes is required to render a map.")
@@ -1136,18 +1299,20 @@ def render_indicator_map(
         map_data = pd.DataFrame()
         indicator_found = False
 
-        if indicator_label and indicator_label in df['indicator_label'].unique():
-            map_data = df[df['indicator_label'] == indicator_label].copy()
+        if indicator_label and indicator_label in df["indicator_label"].unique():
+            map_data = df[df["indicator_label"] == indicator_label].copy()
             indicator_found = True
 
         # Fallback if necessary
         if not indicator_found and fallback_function:
-            st.info(f"Indicator '{indicator_label}' not found, using fallback function.")
+            st.info(
+                f"Indicator '{indicator_label}' not found, using fallback function."
+            )
             try:
                 map_data = fallback_function()
                 if map_data is None or map_data.empty:
-                     st.warning("Fallback function did not return valid map data.")
-                     return
+                    st.warning("Fallback function did not return valid map data.")
+                    return
                 st.info("Using map data generated by fallback function.")
             except Exception as e:
                 st.error(f"Error executing fallback function for map: {e}")
@@ -1155,106 +1320,151 @@ def render_indicator_map(
 
         # If still no data
         if map_data.empty:
-            st.warning(f"No data available for map indicator: '{indicator_label or 'N/A'}'")
-            fig = go.Figure().update_layout(title_text=f"{section_title} (No Data)", height=400, geo_scope='africa')
-            fig.add_annotation(text="No data found.", xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False)
+            st.warning(
+                f"No data available for map indicator: '{indicator_label or 'N/A'}'"
+            )
+            fig = go.Figure().update_layout(
+                title_text=f"{section_title} (No Data)", height=400, geo_scope="africa"
+            )
+            fig.add_annotation(
+                text="No data found.",
+                xref="paper",
+                yref="paper",
+                x=0.5,
+                y=0.5,
+                showarrow=False,
+            )
             st.plotly_chart(fig, use_container_width=True)
             return
 
         # --- Year Selection for Map ---
         map_year = None
-        if 'year' in map_data.columns:
-            map_data['year'] = pd.to_numeric(map_data['year'], errors='coerce')
-            available_years = sorted(map_data['year'].dropna().unique().astype(int), reverse=True)
+        if "year" in map_data.columns:
+            map_data["year"] = pd.to_numeric(map_data["year"], errors="coerce")
+            available_years = sorted(
+                map_data["year"].dropna().unique().astype(int), reverse=True
+            )
 
             if not available_years:
                 st.warning("No valid years found in the data for the map.")
                 return
 
             # Use year_range to set default if provided and valid
-            default_year = available_years[0] # Default to latest
+            default_year = available_years[0]  # Default to latest
             if year_range:
                 range_min, range_max = year_range
-                valid_years_in_range = [y for y in available_years if range_min <= y <= range_max]
+                valid_years_in_range = [
+                    y for y in available_years if range_min <= y <= range_max
+                ]
                 if valid_years_in_range:
-                    default_year = max(valid_years_in_range) # Default to latest within range
+                    default_year = max(
+                        valid_years_in_range
+                    )  # Default to latest within range
 
             # Create a year selector - use a unique key
             year_selector_key = f"map_year_selector_{container_key}"
             map_year = st.selectbox(
                 "Select Year for Map",
                 options=available_years,
-                index=available_years.index(default_year), # Set default index
-                key=year_selector_key
+                index=available_years.index(default_year),  # Set default index
+                key=year_selector_key,
             )
             # Filter data for the selected year
-            map_data = map_data[map_data['year'] == map_year]
+            map_data = map_data[map_data["year"] == map_year]
 
         else:
-            st.warning("Year column not found. Map will show aggregated or first available data points.")
+            st.warning(
+                "Year column not found. Map will show aggregated or first available data points."
+            )
             # Decide on aggregation strategy if no year - e.g., mean, latest?
             # For simplicity, let's take the first value per country if no year
-            if 'country_or_area' in map_data.columns:
-                map_data = map_data.groupby('country_or_area').first().reset_index()
-            elif 'iso3' in map_data.columns:
-                 map_data = map_data.groupby('iso3').first().reset_index()
-
+            if "country_or_area" in map_data.columns:
+                map_data = map_data.groupby("country_or_area").first().reset_index()
+            elif "iso3" in map_data.columns:
+                map_data = map_data.groupby("iso3").first().reset_index()
 
         # Check again if data remains after year selection/aggregation
         if map_data.empty:
-            st.warning(f"No data available for '{indicator_label or 'N/A'}' for the year {map_year}.")
-            fig = go.Figure().update_layout(title_text=f"{section_title} (No Data for {map_year})", height=400, geo_scope='africa')
-            fig.add_annotation(text=f"No data found for {map_year}.", xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False)
+            st.warning(
+                f"No data available for '{indicator_label or 'N/A'}' for the year {map_year}."
+            )
+            fig = go.Figure().update_layout(
+                title_text=f"{section_title} (No Data for {map_year})",
+                height=400,
+                geo_scope="africa",
+            )
+            fig.add_annotation(
+                text=f"No data found for {map_year}.",
+                xref="paper",
+                yref="paper",
+                x=0.5,
+                y=0.5,
+                showarrow=False,
+            )
             st.plotly_chart(fig, use_container_width=True)
             return
 
         # --- Create and Display Map ---
         map_options = map_options or {}
-        value_col = map_options.get('value_column', 'value')
-        location_col = map_options.get('location_column', 'country_or_area') # Prefer name if available
-        iso_ref_col = map_options.get('iso_column', 'iso3')
+        value_col = map_options.get("value_column", "value")
+        location_col = map_options.get(
+            "location_column", "country_or_area"
+        )  # Prefer name if available
+        iso_ref_col = map_options.get("iso_column", "iso3")
 
         # Ensure value and location columns are present
         if value_col not in map_data.columns:
-             st.error(f"Value column '{value_col}' needed for map not found in data.")
-             return
-        if location_col not in map_data.columns and 'iso3' not in map_data.columns:
-             st.error("Neither location column ('country_or_area') nor 'iso3' found for map.")
-             return
+            st.error(f"Value column '{value_col}' needed for map not found in data.")
+            return
+        if location_col not in map_data.columns and "iso3" not in map_data.columns:
+            st.error(
+                "Neither location column ('country_or_area') nor 'iso3' found for map."
+            )
+            return
         # If primary location col missing, try iso3
-        if location_col not in map_data.columns and 'iso3' in map_data.columns:
-            location_col = 'iso3'
+        if location_col not in map_data.columns and "iso3" in map_data.columns:
+            location_col = "iso3"
             # Adjust location mode if using ISO directly
-            map_options['locationmode'] = 'ISO-3'
-
+            map_options["locationmode"] = "ISO-3"
 
         fig = create_choropleth_map(
             data=map_data,
             location_column=location_col,
             value_column=value_col,
-            title="", # Title handled by subheader
+            title="",  # Title handled by subheader
             reference_data=reference_data,
             iso_column=iso_ref_col,
             # Pass other options like color scale, range etc.
-            color_continuous_scale=map_options.get('color_continuous_scale', "Blues"),
-            range_color=map_options.get('range_color', None),
-            height=map_options.get('height', 500),
-            width=map_options.get('width', None)
+            color_continuous_scale=map_options.get("color_continuous_scale", "Blues"),
+            range_color=map_options.get("range_color", None),
+            height=map_options.get("height", 500),
+            width=map_options.get("width", None),
         )
 
         # Display the chart if data is available
         if fig:
-            st.plotly_chart(fig, use_container_width=True, key=f"{container_key}_plotly") # Added unique key
+            st.plotly_chart(
+                fig, use_container_width=True, key=f"{container_key}_plotly"
+            )  # Added unique key
 
         # Optional: Data table display
-        show_map_data = map_options.get('show_data_table', True) # Default to True
+        show_map_data = map_options.get("show_data_table", True)  # Default to True
         if show_map_data:
             with st.expander(f"View Data for {map_year or 'Selected Data'}"):
-                cols_to_show = [location_col, value_col, 'year'] # Add year if it exists
-                display_map_df = map_data[[col for col in cols_to_show if col in map_data.columns]].copy()
+                cols_to_show = [
+                    location_col,
+                    value_col,
+                    "year",
+                ]  # Add year if it exists
+                display_map_df = map_data[
+                    [col for col in cols_to_show if col in map_data.columns]
+                ].copy()
                 if indicator_label and value_col in display_map_df.columns:
-                     display_map_df = display_map_df.rename(columns={value_col: indicator_label})
+                    display_map_df = display_map_df.rename(
+                        columns={value_col: indicator_label}
+                    )
                 st.dataframe(display_map_df)
+
 
 def setup_page_config(title="Nexus Dashboard", icon="📊", layout="wide"):
     """Sets the Streamlit page configuration and applies custom CSS."""
@@ -1300,6 +1510,7 @@ def setup_page_config(title="Nexus Dashboard", icon="📊", layout="wide"):
     """
     st.markdown(css, unsafe_allow_html=True)
 
+
 def setup_sidebar_filters(ref_data, df=None, key_prefix=""):
     """
     Sets up sidebar filters for region, country, and year range selection.
@@ -1317,16 +1528,18 @@ def setup_sidebar_filters(ref_data, df=None, key_prefix=""):
     st.sidebar.header("Filters")
 
     # --- Region Selection ---
-    regions = sorted(ref_data['Region Name'].dropna().unique())
+    regions = sorted(ref_data["Region Name"].dropna().unique())
     selected_region = st.sidebar.selectbox(
-        "Select Region",
-        regions,
-        key=f"{key_prefix}_region_select"
+        "Select Region", regions, key=f"{key_prefix}_region_select"
     )
 
     # --- Country Selection (with Regional Aggregate) ---
     # Get all countries in the selected region
-    countries_in_region = sorted(ref_data[ref_data['Region Name'] == selected_region]['Country or Area'].dropna().unique())
+    countries_in_region = sorted(
+        ref_data[ref_data["Region Name"] == selected_region]["Country or Area"]
+        .dropna()
+        .unique()
+    )
     # Add region average if it exists in the data
     region_average_label = f"{selected_region} (Region Average)"
     region_countries_with_avg = countries_in_region.copy()
@@ -1336,36 +1549,37 @@ def setup_sidebar_filters(ref_data, df=None, key_prefix=""):
         "Select Countries / Regional Average",
         options=region_countries_with_avg,
         default=region_countries_with_avg,  # All selected by default
-        key=f"{key_prefix}_country_multiselect"
+        key=f"{key_prefix}_country_multiselect",
     )
 
     # --- Year Range Selection ---
-    min_year, max_year = 1960, 2024 # Default fallback range
-    if df is not None and 'year' in df.columns and not df['year'].isnull().all():
-        min_year = int(df['year'].min())
-        max_year = int(df['year'].max())
+    min_year, max_year = 1960, 2024  # Default fallback range
+    if df is not None and "year" in df.columns and not df["year"].isnull().all():
+        min_year = int(df["year"].min())
+        max_year = int(df["year"].max())
 
     # Ensure min_year is less than max_year
     if min_year >= max_year:
-         min_year_slider = max_year - 1
-         max_year_slider = max_year
+        min_year_slider = max_year - 1
+        max_year_slider = max_year
     else:
-         min_year_slider = min_year
-         max_year_slider = max_year
+        min_year_slider = min_year
+        max_year_slider = max_year
 
     start_year, end_year = st.sidebar.slider(
         "Select Year Range",
         min_value=min_year_slider,
         max_value=max_year_slider,
-        value=(min_year_slider, max_year_slider), # Default to full range initially
-        key=f"{key_prefix}_year_slider"
+        value=(min_year_slider, max_year_slider),  # Default to full range initially
+        key=f"{key_prefix}_year_slider",
     )
 
     return {
         "selected_region": selected_region,
         "selected_countries": selected_countries,
-        "year_range": (start_year, end_year)
+        "year_range": (start_year, end_year),
     }
+
 
 def create_data_explorer(df, key_prefix=""):
     """
@@ -1385,13 +1599,13 @@ def create_data_explorer(df, key_prefix=""):
             st.info("No data loaded to explore.")
             return
 
-        if 'indicator_label' not in df.columns:
+        if "indicator_label" not in df.columns:
             st.warning("Cannot display indicators: 'indicator_label' column missing.")
-            st.dataframe(df.head()) # Show head of what data IS available
+            st.dataframe(df.head())  # Show head of what data IS available
             return
 
         st.markdown("**Available Indicators in Filtered Data**")
-        unique_indicators = sorted(df['indicator_label'].dropna().unique())
+        unique_indicators = sorted(df["indicator_label"].dropna().unique())
 
         if not unique_indicators:
             st.info("No unique indicators found in the currently filtered data.")
@@ -1403,10 +1617,16 @@ def create_data_explorer(df, key_prefix=""):
         col1, col2 = st.columns(2)
         split_point = (len(unique_indicators) + 1) // 2
         with col1:
-            st.dataframe(pd.DataFrame({'Indicator': unique_indicators[:split_point]}), hide_index=True)
+            st.dataframe(
+                pd.DataFrame({"Indicator": unique_indicators[:split_point]}),
+                hide_index=True,
+            )
         with col2:
-             if len(unique_indicators) > split_point:
-                 st.dataframe(pd.DataFrame({'Indicator': unique_indicators[split_point:]}), hide_index=True)
+            if len(unique_indicators) > split_point:
+                st.dataframe(
+                    pd.DataFrame({"Indicator": unique_indicators[split_point:]}),
+                    hide_index=True,
+                )
 
         st.markdown("**View Sample Data for an Indicator**")
         select_key = f"{key_prefix}_data_explorer_select"
@@ -1414,30 +1634,39 @@ def create_data_explorer(df, key_prefix=""):
             "Choose an indicator to see its structure:",
             unique_indicators,
             key=select_key,
-            index=0 # Default to the first indicator
+            index=0,  # Default to the first indicator
         )
 
         if selected_indicator:
-            sample_df = df[df['indicator_label'] == selected_indicator].copy()
+            sample_df = df[df["indicator_label"] == selected_indicator].copy()
             st.write(f"Sample data for: **{selected_indicator}**")
 
             # Show relevant columns by default
-            cols_to_show = ['country_or_area', 'iso3', 'year', 'value', 'unit']
-            sample_df_display = sample_df[[col for col in cols_to_show if col in sample_df.columns]]
+            cols_to_show = ["country_or_area", "iso3", "year", "value", "unit"]
+            sample_df_display = sample_df[
+                [col for col in cols_to_show if col in sample_df.columns]
+            ]
 
-            st.dataframe(sample_df_display.head()) # Show the first few rows
-            st.caption(f"Showing top 5 rows. Total rows for this indicator (in current filter): {len(sample_df)}")
+            st.dataframe(sample_df_display.head())  # Show the first few rows
+            st.caption(
+                f"Showing top 5 rows. Total rows for this indicator (in current filter): {len(sample_df)}"
+            )
+
 
 def create_topic_page(
     page_title,
     overview_text,
     main_dataframe,
     # Define sections more explicitly
-    map_section: Optional[Dict[str, Any]] = None, # e.g., {'indicator': 'PEFA PI-1', 'title': 'PEFA Scores', ...}
-    tab_sections: Optional[Dict[str, List[Dict[str, Any]]]] = None, # e.g., {'Tab 1 Title': [{'indicator': '...', 'chart_type': 'bar'}, ...]}
-    data_explorer: bool = True, # Whether to include the data explorer section
+    map_section: Optional[
+        Dict[str, Any]
+    ] = None,  # e.g., {'indicator': 'PEFA PI-1', 'title': 'PEFA Scores', ...}
+    tab_sections: Optional[
+        Dict[str, List[Dict[str, Any]]]
+    ] = None,  # e.g., {'Tab 1 Title': [{'indicator': '...', 'chart_type': 'bar'}, ...]}
+    data_explorer: bool = True,  # Whether to include the data explorer section
     reference_data_path=None,
-    page_key="topic" # Base key for widgets on this page
+    page_key="topic",  # Base key for widgets on this page
 ):
     """
     Creates a standard topic page structure with optional map, tabs, and data explorer.
@@ -1460,8 +1689,10 @@ def create_topic_page(
     setup_page_config(title=page_title)
     ref_data = load_country_reference_data(reference_data_path)
     if ref_data.empty:
-        st.error("Failed to load essential country reference data. Page cannot render correctly.")
-        return # Stop execution if reference data failed
+        st.error(
+            "Failed to load essential country reference data. Page cannot render correctly."
+        )
+        return  # Stop execution if reference data failed
 
     # --- 2. Setup Sidebar Filters ---
     filters = setup_sidebar_filters(ref_data, main_dataframe, key_prefix=page_key)
@@ -1475,18 +1706,20 @@ def create_topic_page(
 
     # --- 5. Render Indicator Map Section (if configured) ---
     if map_section and isinstance(map_section, dict):
-        indicator = map_section.get('indicator_label')
+        indicator = map_section.get("indicator_label")
         if indicator:
             render_indicator_map(
                 df=df_filtered,
                 indicator_label=indicator,
-                title=map_section.get('title', indicator),
-                description=map_section.get('description'),
-                reference_data=ref_data, # Pass loaded ref_data
-                year_range=filters.get('year_range'), # Pass year range for year selection
-                map_options=map_section.get('map_options', {}),
-                fallback_function=map_section.get('fallback_function'),
-                container_key=f"{page_key}_map_{indicator.replace(' ', '_')[:10]}" # Generate key
+                title=map_section.get("title", indicator),
+                description=map_section.get("description"),
+                reference_data=ref_data,  # Pass loaded ref_data
+                year_range=filters.get(
+                    "year_range"
+                ),  # Pass year range for year selection
+                map_options=map_section.get("map_options", {}),
+                fallback_function=map_section.get("fallback_function"),
+                container_key=f"{page_key}_map_{indicator.replace(' ', '_')[:10]}",  # Generate key
             )
         else:
             st.warning("Map section configured but 'indicator_label' is missing.")
@@ -1500,19 +1733,25 @@ def create_topic_page(
             with tabs[i]:
                 indicator_configs = tab_sections[tab_title]
                 if not isinstance(indicator_configs, list):
-                    st.error(f"Configuration for tab '{tab_title}' should be a list of indicator dictionaries.")
+                    st.error(
+                        f"Configuration for tab '{tab_title}' should be a list of indicator dictionaries."
+                    )
                     continue
 
                 for j, config in enumerate(indicator_configs):
                     if not isinstance(config, dict):
-                         st.error(f"Invalid item in configuration list for tab '{tab_title}'. Expected a dictionary.")
-                         continue
+                        st.error(
+                            f"Invalid item in configuration list for tab '{tab_title}'. Expected a dictionary."
+                        )
+                        continue
 
-                    indicator_label = config.get('indicator_label')
-                    fallback_func = config.get('fallback_function')
+                    indicator_label = config.get("indicator_label")
+                    fallback_func = config.get("fallback_function")
 
                     if not indicator_label and not fallback_func:
-                        st.warning(f"Skipping item {j+1} in tab '{tab_title}': Must provide 'indicator_label' or 'fallback_function'.")
+                        st.warning(
+                            f"Skipping item {j+1} in tab '{tab_title}': Must provide 'indicator_label' or 'fallback_function'."
+                        )
                         continue
 
                     # Generate a unique key for each section within the tab
@@ -1522,20 +1761,30 @@ def create_topic_page(
                     render_indicator_section(
                         df=df_filtered,
                         indicator_label=indicator_label,
-                        title=config.get('title', indicator_label), # Default title to label
-                        description=config.get('description'),
-                        chart_type=config.get('chart_type', 'bar'), # Default chart type
-                        selected_countries=filters.get('selected_countries'), # Pass selected countries
-                        year_range=filters.get('year_range'), # Pass selected year range
-                        chart_options=config.get('chart_options', {}),
+                        title=config.get(
+                            "title", indicator_label
+                        ),  # Default title to label
+                        description=config.get("description"),
+                        chart_type=config.get(
+                            "chart_type", "bar"
+                        ),  # Default chart type
+                        selected_countries=filters.get(
+                            "selected_countries"
+                        ),  # Pass selected countries
+                        year_range=filters.get(
+                            "year_range"
+                        ),  # Pass selected year range
+                        chart_options=config.get("chart_options", {}),
                         fallback_function=fallback_func,
-                        show_data_table=config.get('show_data_table', True), # Default to show table
-                        container_key=section_key
+                        show_data_table=config.get(
+                            "show_data_table", True
+                        ),  # Default to show table
+                        container_key=section_key,
                     )
 
     # --- 7. Render Data Explorer (if enabled) ---
     if data_explorer:
-        st.divider() # Add a visual separator
+        st.divider()  # Add a visual separator
         create_data_explorer(df_filtered, key_prefix=page_key)
 
     # --- Optional: Debug Info ---
@@ -1543,6 +1792,7 @@ def create_topic_page(
     #     st.write("Filters:", filters)
     #     st.write("Filtered Data Shape:", df_filtered.shape)
     #     st.write("Reference Data Columns:", ref_data.columns.tolist())
+
 
 def standardize_country_name(country: str) -> str:
     """
@@ -1557,16 +1807,22 @@ def standardize_country_name(country: str) -> str:
     """
     if pd.isna(country):
         return ""
-    
+
     # Convert to string and lowercase
     name = str(country).lower().strip()
-    
+
     # Remove common prefixes/suffixes
-    prefixes = ["republic of ", "democratic republic of ", "kingdom of ", "state of ", "the "]
+    prefixes = [
+        "republic of ",
+        "democratic republic of ",
+        "kingdom of ",
+        "state of ",
+        "the ",
+    ]
     for prefix in prefixes:
         if name.startswith(prefix):
-            name = name[len(prefix):]
-    
+            name = name[len(prefix) :]
+
     # Handle specific country name variations
     name_mapping = {
         "united states of america": "united states",
@@ -1586,10 +1842,11 @@ def standardize_country_name(country: str) -> str:
         "congo-kinshasa": "democratic republic of the congo",
         "uae": "united arab emirates",
         "cabo verde": "cape verde",
-        "timor leste": "timor-leste"
+        "timor leste": "timor-leste",
     }
-    
+
     return name_mapping.get(name, name)
+
 
 def get_indicator_metadata(indicator_label):
     """
@@ -1605,15 +1862,16 @@ def get_indicator_metadata(indicator_label):
     }
     return metadata.get(indicator_label, "No description available for this indicator.")
 
+
 def render_data_availability_heatmap(
     df,
     indicator_label,
-    country_col='country_or_area',
-    year_col='year',
-    value_col='value',
+    country_col="country_or_area",
+    year_col="year",
+    value_col="value",
     title="Data Availability Heatmap",
     container_key=None,
-    all_countries=None
+    all_countries=None,
 ):
     """
     Displays a heatmap showing which countries and years have data for a given indicator.
@@ -1621,17 +1879,18 @@ def render_data_availability_heatmap(
     """
     import streamlit as st
     import plotly.express as px
+
     # Filter for the indicator
-    df_ind = df[df['indicator_label'] == indicator_label].copy()
+    df_ind = df[df["indicator_label"] == indicator_label].copy()
     # Pivot: countries as rows, years as columns, 1 if data exists
     if not df_ind.empty:
-        df_ind['has_data'] = 1
+        df_ind["has_data"] = 1
         heatmap_df = df_ind.pivot_table(
             index=country_col,
             columns=year_col,
-            values='has_data',
-            aggfunc='max',
-            fill_value=0
+            values="has_data",
+            aggfunc="max",
+            fill_value=0,
         )
     else:
         # If no data at all, create an empty DataFrame with no columns
@@ -1651,24 +1910,38 @@ def render_data_availability_heatmap(
         labels=dict(x="Year", y="Country", color="Data Present"),
         color_continuous_scale=[(0, "#eee"), (1, "#1f77b4")],
         aspect="auto",
-        title=title
+        title=title,
     )
     fig.update_xaxes(side="top")
     fig.update_layout(margin=dict(l=0, r=0, t=40, b=0))
-    st.plotly_chart(fig, use_container_width=True, key=f"{container_key}_heatmap" if container_key else None)
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key=f"{container_key}_heatmap" if container_key else None,
+    )
+
 
 def load_main_data(file_path="data/nexus.parquet"):
     """
     Loads the main dataset from a parquet file, with basic validation and error handling.
     Returns a DataFrame with columns: indicator_label, country_or_area, year, value, iso3 (if available).
     """
+
     @st.cache_data
     def _load(file_path):
         try:
             df = pd.read_parquet(file_path)
-            required_cols = ['indicator_label', 'country_or_area', 'year', 'value', 'iso3']
+            required_cols = [
+                "indicator_label",
+                "country_or_area",
+                "year",
+                "value",
+                "iso3",
+            ]
             if not all(col in df.columns for col in required_cols):
-                st.warning(f"Warning: Main data might be missing some expected columns ({required_cols}).")
+                st.warning(
+                    f"Warning: Main data might be missing some expected columns ({required_cols})."
+                )
             return df
         except FileNotFoundError:
             st.error(f"Error: The main data file was not found at {file_path}")
@@ -1676,4 +1949,5 @@ def load_main_data(file_path="data/nexus.parquet"):
         except Exception as e:
             st.error(f"An error occurred while loading the main data: {e}")
             return pd.DataFrame()
+
     return _load(file_path)

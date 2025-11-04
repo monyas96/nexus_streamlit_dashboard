@@ -3,7 +3,7 @@ from utils import render_logo_header
 
 render_logo_header()
 # Back to home (top-right)
-col1, col2 = st.columns([7, 1])
+col1, col2 = st.columns([7, 1], gap=None)
 with col2:
     st.page_link("pages/0_home.py", label="🏠 Back to Home")
 # === Top-Level Framing ===
@@ -19,7 +19,7 @@ st.divider()
 
 # === Step 1: Understanding Sustainable vs. Unsustainable Finance ===
 with st.expander("🔍 What is Sustainable vs. Unsustainable Finance?", expanded=False):
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2, gap=None)
 
     with col1:
         st.markdown("### ✅ Sustainable Finance")
@@ -72,7 +72,7 @@ st.divider()
 # === Step 3: Entry Points and Framework ===
 st.header("🧭 Entry Points: Efficiency and Effectiveness")
 
-col1, col2 = st.columns(2)
+col1, col2 = st.columns(2, gap=None)
 
 with col1:
     st.markdown("### 📈 Entry Points to Assess Sustainable Finance")

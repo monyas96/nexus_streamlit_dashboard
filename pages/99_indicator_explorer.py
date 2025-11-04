@@ -154,7 +154,7 @@ if not df_filtered.empty:
         else:
             st.text("'value' column not found.")
 
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2, gap=None)
         with col1:
             st.markdown("**Unique Countries:**")
             if 'country_or_area' in df_filtered.columns:

@@ -9,14 +9,14 @@ def render_logo_header():
 
     # Check if logo file exists
     if os.path.exists(LOGO_PATH):
-        col1, col2, col3 = st.columns([1, 6, 1])
+        col1, col2, col3 = st.columns([1, 6, 1], gap=None)
         with col1:
             st.image(LOGO_PATH, width=150)
     else:
         # Try the backup path format
         alt_logo_path = os.path.join("logos", "OSAA identifier color.png")
         if os.path.exists(alt_logo_path):
-            col1, col2, col3 = st.columns([1, 6, 1])
+            col1, col2, col3 = st.columns([1, 6, 1], gap=None)
             with col1:
                 st.image(alt_logo_path, width=150)
         else:

@@ -1,0 +1,25 @@
+# Streamlit Configuration File
+# This file enforces app-wide settings for layout and theme
+
+[theme]
+# Primary theme settings
+base="light"
+primaryColor="#E87722"  # OSAA Orange
+backgroundColor="#FFFFFF"  # White background
+secondaryBackgroundColor="#F5F7FA"  # Light gray for cards/containers
+textColor="#002B7F"  # OSAA Blue for text
+font="sans serif"
+
+[server]
+# Ensure the app always starts in wide mode
+headless=true
+
+[browser]
+# Gather usage statistics (set to false for privacy)
+gatherUsageStats=false
+
+[ui]
+# Hide the "Made with Streamlit" footer
+hideTopBar=false
+hideSidebarNav=false
+

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 6 3, 0 6" fill="#002B7F"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="#002B7F" stroke-width="4" opacity="0.35">
+    <path d="M20,100 A80,80 0 1,1 180,100" marker-end="url(#arrow)"/>
+    <path d="M180,100 A80,80 0 1,1 20,100" marker-end="url(#arrow)"/>
+  </g>
+</svg>
+

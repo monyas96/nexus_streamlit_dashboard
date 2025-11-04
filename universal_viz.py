@@ -1400,7 +1400,7 @@ def create_data_explorer(df, key_prefix=""):
         # Display count and list
         st.write(f"Found {len(unique_indicators)} unique indicators.")
         # Use columns for better layout if many indicators
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2, gap=None)
         split_point = (len(unique_indicators) + 1) // 2
         with col1:
             st.dataframe(pd.DataFrame({'Indicator': unique_indicators[:split_point]}), hide_index=True)
